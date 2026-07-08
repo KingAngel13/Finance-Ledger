@@ -1,84 +1,81 @@
 /* Premium Light Mode Baseline Palette */
 body {
-    background-color: #f4f3ef; /* Warm, premium light beige canvas */
+    background-color: #f4f3ef;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: #1e293b; /* Deep slate for high-contrast readability */
+    color: #1e293b;
+    padding-bottom: env(safe-area-inset-bottom); /* Fixes mobile home bars clipping view */
 }
 
 .header-banner {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: white;
-    padding: 16px 24px;
+    padding: 12px 16px;
     border-radius: 12px;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
     border-left: 5px solid #10b981;
 }
 
 .header-title {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     letter-spacing: -0.5px;
     color: #ffffff;
 }
 
+.matching-dropdowns {
+    display: flex;
+    gap: 4px;
+}
+
 .title-select {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.12);
     color: #10b981 !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    font-size: 1.3rem;
-    padding: 4px 35px 4px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1.1rem;
+    padding: 4px 24px 4px 8px;
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2310b981'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
 }
+.fortnightly-select {
+    color: #3b82f6 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%233b82f6'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
 .title-select option { color: #0f172a; background-color: white; }
 
-/* Themed Cards System Layouts */
 .themed-card {
     border: none;
     border-radius: 12px;
     background-color: white;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
 }
 
-/* Clear headings on white cards */
-.themed-card h4 {
+.themed-card h5, .sector-heading {
     color: #0f172a !important; 
 }
 
 .card-summary-hub { border-top: 4px solid #1e40af; }
 .card-logger-system { border-top: 4px solid #64748b; }
 
-/* Main layout text updates for section headings */
-h4.text-white {
-    color: #0f172a !important;
-}
-
-/* Global Fix for section labels/headings that were invisible */
-.container-fluid h4 {
-    color: #0f172a !important;
-}
-
-/* Inputs form elements labels configuration */
 .form-label, .text-muted {
-    color: #475569 !important; /* Darkened for ultimate text contrast */
+    color: #475569 !important;
 }
 
 .form-control, .form-select {
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #0f172a !important;
+    font-size: 0.9rem;
 }
 
-/* Icons & Visual Aesthetics */
 .theme-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 .bg-primary-light { background-color: #eff6ff; }
 .bg-secondary-light { background-color: #f1f5f9; }
@@ -86,41 +83,39 @@ h4.text-white {
 
 .dot-indicator {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    margin-right: 6px;
+    margin-right: 4px;
 }
 .bg-danger-solid { background-color: #ef4444; }
 .bg-warning-solid { background-color: #eab308; }
 .bg-info-solid { background-color: #3b82f6; }
 .bg-success-solid { background-color: #22c55e; }
 
-/* Table Graphics Overhaul */
-.table-summary thead { background-color: #1e3a8a; color: white; }
-.table-summary th { font-weight: 600; font-size: 0.85rem; padding: 10px; color: white !important;}
-.table-summary td { padding: 9px 10px; font-size: 0.9rem; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+/* Table Readability */
+.table-summary thead { background-color: #1e3a8a; }
+.table-summary th { font-weight: 600; font-size: 0.8rem; padding: 6px; color: white !important;}
+.table-summary td { padding: 6px; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
 
 .row-income { background-color: #f0fdf4; color: #166534; }
 .row-expense { background-color: #fef2f2; color: #991b1b; }
 .net-total-row { background-color: #f8fafc; font-weight: 800; border-top: 2px solid #cbd5e1; }
 
-/* Income & Expense Master Cards styling */
-.card-financial-header { font-size: 0.9rem; letter-spacing: 0.2px; }
+.card-financial-header { font-size: 0.85rem; padding: 6px 10px; }
 .bg-income { background: linear-gradient(90deg, #15803d 0%, #16a34a 100%); }
 .bg-expense { background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%); }
 
-.table-income thead, .table-expenses thead { background-color: #f8fafc; color: #475569; font-size: 0.75rem; text-transform: uppercase; }
-.table-income td, .table-expenses td { font-size: 0.85rem; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
+.table-income thead, .table-expenses thead { background-color: #f8fafc; color: #475569; font-size: 0.7rem; text-transform: uppercase; }
+.table-income td, .table-expenses td { font-size: 0.8rem; padding: 5px 6px; border-bottom: 1px solid #e2e8f0; color: #0f172a !important; }
 
-/* Dynamic Flow Chart Layout Sizes */
 .chart-container {
     position: relative;
-    height: 198px; 
+    height: 140px; 
     width: 100%;
 }
 
-/* VINTAGE OLD SCHOOL CALCULATOR STYLING - FIXED FLUSH EXTENSION */
+/* CALCULATOR BASE STRETCH ENGINE */
 .old-school-calc {
     background-color: #27272a;
     border: 3px solid #3f3f46;
@@ -129,28 +124,26 @@ h4.text-white {
     font-family: 'Courier New', Courier, monospace;
     display: flex;
     flex-direction: column;
-    height: 35%; /* Stretches background plate */
+    height: 100%;
 }
 .h-calc-row {
     flex-grow: 1;
-    min-height: 270px; /* Secure wrapper height baseline */
+    min-height: 240px;
 }
 
-.calc-brand { font-size: 0.7rem; color: #a1a1aa; letter-spacing: 1px; font-weight: bold; }
-.system-status-txt { font-size: 0.55rem; padding: 2px 4px; letter-spacing: 0.5px; }
+.calc-brand { font-size: 0.65rem; color: #a1a1aa; font-weight: bold; }
+.system-status-txt { font-size: 0.5rem; padding: 1px 3px; }
 
 .calc-display {
     background-color: #042f1a;
     color: #22c55e;
     font-family: monospace;
-    font-size: 1.65rem; 
+    font-size: 1.4rem; 
     font-weight: bold;
     border-radius: 4px;
     border: 1px solid #14532d;
-    min-height: 46px;
-    line-height: 44px;
-    letter-spacing: 1px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+    min-height: 38px;
+    line-height: 36px;
     overflow-x: auto;
     white-space: nowrap;
 }
@@ -158,58 +151,49 @@ h4.text-white {
 .calc-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 .calc-grid button {
-    padding: 7px 0;
-    font-size: 0.95rem;
+    padding: 6px 0;
+    font-size: 0.9rem;
     font-weight: bold;
     border-radius: 4px;
     border: 1px solid rgba(0,0,0,0.4);
-    cursor: pointer;
 }
-.calc-grid button:active { transform: translateY(1px); }
 
 .btn-calc-num { background-color: #52525b; color: white; }
-.btn-calc-num:hover { background-color: #71717a; }
 .btn-calc-op { background-color: #3f3f46; color: #fbbf24; }
-.btn-calc-op:hover { background-color: #52525b; }
 .btn-calc-clear { background-color: #991b1b; color: white; }
-.btn-calc-clear:hover { background-color: #b91c1c; }
 .btn-calc-eq { background-color: #166534; color: white; grid-row: span 2; height: 100%; }
-.btn-calc-eq:hover { background-color: #15803d; }
 .btn-zero { grid-column: span 2; }
 
-/* Audit Tape Ticker Style */
-.tape-title { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.5px; color: #a1a1aa; }
+/* Audit Tape Size Adjusters */
+.tape-title { font-size: 0.55rem; color: #a1a1aa; font-weight: bold; }
 .calc-history-tape {
     background-color: #fafafa;
     color: #18181b;
     border-radius: 4px;
-    padding: 8px;
-    font-size: 1.3rem;
+    padding: 4px;
+    font-size: 0.65rem;
     overflow-y: auto;
     border: 1px solid #3f3f46;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 .tape-row {
     border-bottom: 1px dashed #d4d4d8;
-    padding: 4px 0;
+    padding: 2px 0;
     text-align: right;
     font-weight: bold;
-    color: #1f2937;
 }
 .tape-row span {
-    font-size: 1.5rem; 
+    font-size: 0.85rem; 
     color: #16a34a; 
     display: inline-block;
-    padding-left: 2px;
 }
-.empty-tape-msg { color: #a1a1aa; text-align: center; margin-top: 75px; font-style: italic; }
+.empty-tape-msg { color: #a1a1aa; text-align: center; margin-top: 50px; font-style: italic; }
 
-/* Envelope Sub-Tables Styling */
+/* Envelopes */
 .card-sub-table { border: none; border-radius: 8px; background-color: white !important; }
-.sub-hdr-bar { font-size: 0.85rem; color: #1e293b !important; }
+.sub-hdr-bar { font-size: 0.8rem; color: #1e293b !important; }
 
 .sub-themed-food { border-top: 3px solid #ef4444; }
 .sub-themed-utilities { border-top: 3px solid #eab308; }
@@ -226,18 +210,21 @@ h4.text-white {
 .text-info-heavy { color: #1d4ed8; }
 .text-success-heavy { color: #15803d; }
 
-.sub-table-summary span { color: #0f172a !important; }
-
-.ledger-box { min-height: 80px; max-height: 240px; overflow-y: auto; }
-.sub-ledger-box { min-height: 50px; max-height: 120px; overflow-y: auto; }
-.sub-ledger-box td { color: #334155 !important; }
+.ledger-box { min-height: 80px; max-height: 200px; overflow-y: auto; }
+.sub-ledger-box { min-height: 40px; max-height: 100px; overflow-y: auto; }
+.sub-ledger-box td { color: #334155 !important; font-size: 0.75rem; padding: 3px 4px; }
 .font-xs { font-size: 0.7rem; }
-.btn-xs { padding: 1px 4px; font-size: 0.75rem; border-radius: 4px; }
-.btn-primary-custom { background-color: #0f172a; color: white; border: none; padding: 8px; border-radius: 6px; }
-.btn-primary-custom:hover { background-color: #1e293b; }
+.btn-xs { padding: 1px 4px; font-size: 0.7rem; border-radius: 4px; }
+.btn-primary-custom { background-color: #0f172a; color: white; border: none; padding: 6px; border-radius: 6px; font-size: 0.85rem; }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+/* Custom Mobile Scrollbars */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+/* Mobile CSS Optimization Media Rules Queries */
+@media (max-width: 576px) {
+    .header-banner { padding: 8px 12px; border-radius: 8px; }
+    .control-header-group .btn { padding: 4px 8px !important; font-size: 0.7rem !important; }
+    .title-select { font-size: 0.95rem; padding: 2px 20px 2px 4px; }
+    .table-summary td, .table-summary th { font-size: 0.75rem; padding: 4px; }
+}
