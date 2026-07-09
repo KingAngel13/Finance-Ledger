@@ -392,64 +392,6 @@ function deleteSelectedArchiveRecord() {
     loadMonthData(currentWorkingMonth);
 }
 
-let calcDisplayString = '0';
-let calcCurrent = '0';
-let calcPrevious = null;
-let calcOperation = null;
-
-function pressCalcKey(key) {
-    const screen = document.getElementById('calc-screen');
-    const tape = document.getElementById('calc-tape');
-
-    if ((key >= '0' && key <= '9') || key === '.') {
-        if (calcCurrent === '0' && key !== '.') {
-            calcCurrent = key;
-        } else if (key === '.' && calcCurrent.includes('.')) {
-            return;
-        } else {
-            calcCurrent += key;
-        }
-        calcDisplayString = calcOperation ? `${calcPrevious}${calcOperation}${calcCurrent}` : calcCurrent;
-    } 
-    else if (key === 'C') {
-        calcCurrent = '0';
-        calcPrevious = null;
-        calcOperation = null;
-        calcDisplayString = '0';
-    } 
-    else if (key === '=') {
-        if (calcOperation && calcPrevious !== null) {
-            const prev = parseFloat(calcPrevious);
-            const curr = parseFloat(calcCurrent);
-            let result = 0;
-            switch(calcOperation) {
-                case '+': result = prev + curr; break;
-                case '-': result = prev - curr; break;
-                case '*': result = prev * curr; break;
-                case '/': result = prev / curr; break;
-            }
-            if (tape.querySelector('.empty-tape-msg')) tape.innerHTML = '';
-            tape.innerHTML += `<div class="tape-row">${calcDisplayString} = ${result.toFixed(2)}</div>`;
-            tape.scrollTop = tape.scrollHeight;
-            calcCurrent = result.toString();
-            calcDisplayString = calcCurrent;
-            calcOperation = null;
-            calcPrevious = null;
-        }
-    } 
-    else {
-        calcOperation = key;
-        calcPrevious = calcCurrent;
-        calcCurrent = '0';
-        calcDisplayString = `${calcPrevious}${calcOperation}`;
-    }
-    screen.innerText = calcDisplayString;
-}
-
-function clearCalcTape() {
-    document.getElementById('calc-tape').innerHTML = '<div class="tape-row empty-tape-msg">Tape Empty</div>';
-}
-
 function initCharts() {
         const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
         donutChart = new Chart(ctxDonut, {
@@ -484,4 +426,3 @@ function updateCharts(catTotals, actInc, actExp, expInc, expExp) {
         barChart.data.datasets[1].data = [expInc, expExp, catTotals["Food & Groceries"].exp, catTotals["Utilities"].exp, catTotals["Shopping"].exp, catTotals["Debts"].exp];
         barChart.update();
     }
-}
