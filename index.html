@@ -2,15 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Finance Hub</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FinanceHub">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2454/2454261.png">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Finance & Monthly Budget Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,149 +11,266 @@
 </head>
 <body>
 
-<div class="container-fluid px-2 px-md-4 my-2 my-md-4">
-    <div class="header-banner d-flex align-items-center justify-content-between flex-wrap gap-2 shadow">
-        <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-sm-auto">
-            <div class="d-flex gap-1 align-items-center matching-dropdowns">
-                <select id="budget-month" class="form-select title-select fw-bold text-center">
-                    <option value="January">Jan</option>
-                    <option value="February">Feb</option>
-                    <option value="March">Mar</option>
-                    <option value="April">Apr</option>
-                    <option value="May">May</option>
-                    <option value="June">June</option>
-                    <option value="July" selected>July</option>
-                    <option value="August">Aug</option>
-                    <option value="September">Sept</option>
-                    <option value="October">Oct</option>
-                    <option value="November">Nov</option>
-                    <option value="December">Dec</option>
-                </select>
-                
-                <select id="budget-fortnight" class="form-select title-select fortnightly-select fw-bold text-center">
-                    <option value="1/2" selected>1/2</option>
-                    <option value="2/2">2/2</option>
-                </select>
-            </div>
-            <h1 class="m-0 fw-bold header-title d-none d-sm-inline">Ledger <span style="font-size: 0.75rem; font-family: monospace; opacity: 0.6; vertical-align: super; font-weight: normal; margin-left: 4px;">v4.19</span></h1>
-            <span id="historical-badge" class="badge bg-danger fs-6 d-none">ARCHIVE</span>
+<div class="container-fluid px-4 my-4">
+    <div class="header-banner d-flex align-items-center justify-content-between flex-wrap gap-3 shadow">
+        <div class="d-flex align-items-center gap-3">
+            <select id="budget-month" class="form-select title-select w-auto fw-bold text-center">
+                <optgroup label="January">
+                    <option value="Jan (1st Half)">January (1st Half)</option>
+                    <option value="Jan (2nd Half)">January (2nd Half)</option>
+                </optgroup>
+                <optgroup label="February">
+                    <option value="Feb (1st Half)">February (1st Half)</option>
+                    <option value="Feb (2nd Half)">February (2nd Half)</option>
+                </optgroup>
+                <optgroup label="March">
+                    <option value="Mar (1st Half)">March (1st Half)</option>
+                    <option value="Mar (2nd Half)">March (2nd Half)</option>
+                </optgroup>
+                <optgroup label="April">
+                    <option value="Apr (1st Half)">April (1st Half)</option>
+                    <option value="Apr (2nd Half)">April (2nd Half)</option>
+                </optgroup>
+                <optgroup label="May">
+                    <option value="May (1st Half)">May (1st Half)</option>
+                    <option value="May (2nd Half)">May (2nd Half)</option>
+                </optgroup>
+                <optgroup label="June">
+                    <option value="Jun (1st Half)">June (1st Half)</option>
+                    <option value="Jun (2nd Half)">June (2nd Half)</option>
+                </optgroup>
+                <optgroup label="July">
+                    <option value="Jul (1st Half)" selected>July (1st Half)</option>
+                    <option value="Jul (2nd Half)">July (2nd Half)</option>
+                </optgroup>
+                <optgroup label="August">
+                    <option value="Aug (1st Half)">August (1st Half)</option>
+                    <option value="Aug (2nd Half)">August (2nd Half)</option>
+                </optgroup>
+                <optgroup label="September">
+                    <option value="Sep (1st Half)">September (1st Half)</option>
+                    <option value="Sep (2nd Half)">September (2nd Half)</option>
+                </optgroup>
+                <optgroup label="October">
+                    <option value="Oct (1st Half)">October (1st Half)</option>
+                    <option value="Oct (2nd Half)">October (2nd Half)</option>
+                </optgroup>
+                <optgroup label="November">
+                    <option value="Nov (1st Half)">November (1st Half)</option>
+                    <option value="Nov (2nd Half)">November (2nd Half)</option>
+                </optgroup>
+                <optgroup label="December">
+                    <option value="Dec (1st Half)">December (1st Half)</option>
+                    <option value="Dec (2nd Half)">December (2nd Half)</option>
+                </optgroup>
+            </select>
+            <h1 class="m-0 fw-bold header-title">Financial Ledger</h1>
+            <span id="historical-badge" class="badge bg-danger fs-6 d-none">READ ONLY ARCHIVE</span>
         </div>
-        
-        <div class="d-flex align-items-center gap-1 w-100 w-md-auto justify-content-between justify-content-md-end control-header-group">
-            <button id="clear-month-btn" class="btn btn-danger btn-sm fw-bold px-2 btn-action shadow-sm" onclick="clearCurrentMonthLogs()"><i class="bi bi-trash3-fill"></i> Wipe</button>
-            <button id="manual-save-btn" class="btn btn-success btn-sm fw-bold px-2 btn-action shadow-sm" onclick="triggerManualSaveFeedback()"><i class="bi bi-floppy-fill"></i> Save</button>
-            <button id="archive-btn" class="btn btn-warning btn-sm fw-bold px-2 btn-action text-dark shadow-sm" onclick="archiveCurrentMonth()"><i class="bi bi-lock-fill"></i> Close</button>
-            <button id="delete-archive-btn" class="btn btn-outline-light btn-sm fw-bold px-2 d-none" onclick="deleteSelectedArchiveRecord()">Unlock</button>
+        <div class="d-flex align-items-center gap-2 control-header-group">
+            <button id="clear-month-btn" class="btn btn-danger btn-sm fw-bold px-3 btn-action shadow-sm" onclick="clearCurrentMonthLogs()"><i class="bi bi-trash3-fill me-1"></i> Wipe Month</button>
+            <button id="manual-save-btn" class="btn btn-success btn-sm fw-bold px-3 btn-action shadow-sm" onclick="triggerManualSaveFeedback()"><i class="bi bi-floppy-fill me-1"></i> Save Draft</button>
+            <button id="archive-btn" class="btn btn-warning btn-sm fw-bold px-3 btn-action text-dark shadow-sm" onclick="archiveCurrentMonth()"><i class="bi bi-lock-fill me-1"></i> Close Month</button>
+            <button id="delete-archive-btn" class="btn btn-outline-light btn-sm fw-bold px-3 d-none" onclick="deleteSelectedArchiveRecord()">Unlock Archive</button>
         </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-xl-5 col-lg-6">
-            <div class="card p-2 p-md-3 mb-3 shadow-sm themed-card card-summary-hub">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="theme-icon bg-primary-light"><i class="bi bi-speedometer2 text-primary"></i></div>
-                    <h5 class="fw-bold m-0 text-dark">Executive Balance Sheet</h5>
-                </div>
+    <div class="row g-4 match-height-row mb-4">
+        <div class="col-xl-3 col-md-4">
+            <div class="card p-4 text-center border-0 shadow-sm h-100" style="background: #1a1d20;">
+                <small class="text-uppercase tracking-wider text-muted fw-bold font-xs d-block mb-2">Total Net Savings (This Month)</small>
+                <h1 id="savings-hero-number" class="display-4 fw-black my-2 text-success">$0.00</h1>
+                <span id="savings-hero-badge" class="badge bg-success-subtle text-success mx-auto px-3 py-1 rounded-pill font-xs fw-bold">Surplus Active</span>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-4">
+            <div class="card p-3 border-0 shadow-sm h-100" style="background: #1a1d20;">
+                <h6 class="text-muted small fw-bold text-uppercase border-bottom border-secondary border-opacity-20 pb-2 mb-3">Efficiency Benchmarks</h6>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle table-summary m-0">
-                        <thead>
-                            <tr>
-                                <th>Allocation</th>
-                                <th class="text-end">Actual</th>
-                                <th class="text-end">Target</th>
-                                <th class="text-center">%</th>
-                            </tr>
-                        </thead>
+                    <table class="table table-sm table-borderless align-middle m-0 text-white">
                         <tbody>
-                            <tr class="row-income fw-bold">
-                                <td>Inflows</td>
-                                <td id="sum-actual-income" class="text-end">$0.00</td>
-                                <td id="sum-expected-income" class="text-end">$0.00</td>
-                                <td id="pct-income" class="text-center">0%</td>
-                            </tr>
-                            <tr class="row-expense fw-bold">
-                                <td>Outflows</td>
-                                <td id="sum-actual-expenses" class="text-end">$0.00</td>
-                                <td id="sum-expected-expenses" class="text-end">$0.00</td>
-                                <td id="pct-expenses" class="text-center">0%</td>
+                            <tr>
+                                <td class="text-muted font-xs py-2">Savings Rate</td>
+                                <td id="metric-savings-rate" class="text-end fw-bold text-info py-2">0.0%</td>
                             </tr>
                             <tr>
-                                <td><span class="dot-indicator bg-danger-solid"></span> Food</td>
-                                <td id="sum-actual-food" class="text-end">$0.00</td>
-                                <td id="sum-expected-food" class="text-end">$0.00</td>
-                                <td id="pct-food" class="text-center">0%</td>
+                                <td class="text-muted font-xs py-2">Burn Velocity</td>
+                                <td id="metric-burn-rate" class="text-end fw-bold text-warning py-2">0.0%</td>
                             </tr>
                             <tr>
-                                <td><span class="dot-indicator bg-warning-solid"></span> Bills</td>
-                                <td id="sum-actual-utilities" class="text-end">$0.00</td>
-                                <td id="sum-expected-utilities" class="text-end">$0.00</td>
-                                <td id="pct-utilities" class="text-center">0%</td>
-                            </tr>
-                            <tr>
-                                <td><span class="dot-indicator bg-info-solid"></span> Shop</td>
-                                <td id="sum-actual-shopping" class="text-end">$0.00</td>
-                                <td id="sum-expected-shopping" class="text-end">$0.00</td>
-                                <td id="pct-shopping" class="text-center">0%</td>
-                            </tr>
-                            <tr>
-                                <td><span class="dot-indicator bg-success-solid"></span> Save</td>
-                                <td id="sum-actual-savings" class="text-end">$0.00</td>
-                                <td id="sum-expected-savings" class="text-end">$0.00</td>
-                                <td id="pct-savings" class="text-center">0%</td>
-                            </tr>
-                            <tr class="net-total-row">
-                                <td class="text-uppercase tracking-wider">Spread</td>
-                                <td id="net-actual" class="text-end">$0.00</td>
-                                <td id="net-expected" class="text-end">$0.00</td>
-                                <td class="text-center">-</td>
+                                <td class="text-muted font-xs py-2">Retained Capital</td>
+                                <td id="metric-retained" class="text-end fw-bold py-2">$0.00</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <div class="row g-2 mb-3">
-                <div class="col-6">
-                    <div class="card p-2 shadow-sm themed-card">
-                        <div class="chart-container">
-                            <canvas id="expenseDonutChart"></canvas>
-                        </div>
-                    </div>
+        </div>
+        <div class="col-xl-6 col-md-4">
+            <div class="card p-3 border-0 shadow-sm h-100 justify-content-between" style="background: #1a1d20; border-left: 4px solid #198754 !important;" id="insight-card-wrapper">
+                <div>
+                    <h6 class="text-muted small fw-bold text-uppercase mb-2">Detailed Strategic Analysis</h6>
+                    <p id="savings-analysis-text" class="text-secondary small m-0 lh-base">
+                        No transaction entries compiled yet. Input income streams and expenses to initialize real-time strategic telemetry forecasts.
+                    </p>
                 </div>
-                <div class="col-6">
-                    <div class="card p-2 shadow-sm themed-card">
-                        <div class="chart-container">
-                            <canvas id="actualVsGoalChart"></canvas>
-                        </div>
-                    </div>
+                <div class="mt-3 pt-2 border-top border-secondary border-opacity-10">
+                    <small class="text-muted font-xs">Status Runway: <strong id="runway-status-badge" class="text-success">Stable</strong></small>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card p-2 p-md-3 shadow-sm old-school-calc mb-3 mb-lg-0">
-                <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-secondary">
-                    <span class="calc-brand">LEDGER MATIC-80 PRO</span>
-                    <span class="badge bg-dark text-success system-status-txt">ENGINE</span>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card p-3 shadow-sm themed-card card-summary-hub h-100 mb-0">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="theme-icon bg-primary-light"><i class="bi bi-speedometer2 text-primary"></i></div>
+                    <h4 class="fw-bold m-0 text-white">Executive Balance Sheet</h4>
                 </div>
-                <div class="row g-2 h-calc-row">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle table-summary m-0">
+                        <thead>
+                            <tr>
+                                <th>Category Allocation</th>
+                                <th class="text-end">Target Budget</th>
+                                <th class="text-end">Actual Flow</th>
+                                <th class="text-end">Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="row-income fw-bold">
+                                <td><i class="bi bi-arrow-down-left-circle-fill me-2 text-success"></i>Total Inflows</td>
+                                <td id="sum-expected-income" class="text-end">$0.00</td>
+                                <td id="sum-actual-income" class="text-end">$0.00</td>
+                                <td id="diff-income" class="text-end">$0.00</td>
+                            </tr>
+                            <tr class="row-expense fw-bold">
+                                <td><i class="bi bi-arrow-up-right-circle-fill me-2 text-danger"></i>Total Outflows</td>
+                                <td id="sum-expected-expenses" class="text-end">$0.00</td>
+                                <td id="sum-actual-expenses" class="text-end">$0.00</td>
+                                <td id="diff-expenses" class="text-end">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td><span class="dot-indicator bg-danger-solid"></span> Food & Groceries</td>
+                                <td id="sum-expected-food" class="text-end">$0.00</td>
+                                <td id="sum-actual-food" class="text-end">$0.00</td>
+                                <td id="diff-food" class="text-end">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td><span class="dot-indicator bg-warning-solid"></span> Utilities & Bills</td>
+                                <td id="sum-expected-utilities" class="text-end">$0.00</td>
+                                <td id="sum-actual-utilities" class="text-end">$0.00</td>
+                                <td id="diff-utilities" class="text-end">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td><span class="dot-indicator bg-info-solid"></span> Lifestyle & Shopping</td>
+                                <td id="sum-expected-shopping" class="text-end">$0.00</td>
+                                <td id="sum-actual-shopping" class="text-end">$0.00</td>
+                                <td id="diff-shopping" class="text-end">$0.00</td>
+                            </tr>
+                            <tr>
+                                <td><span class="dot-indicator bg-purple-solid"></span> Debts & Repayments</td>
+                                <td id="sum-expected-debts" class="text-end">$0.00</td>
+                                <td id="sum-actual-debts" class="text-end">$0.00</td>
+                                <td id="diff-debts" class="text-end">$0.00</td>
+                            </tr>
+                            <tr class="net-total-row fw-bold">
+                                <td class="text-uppercase tracking-wider text-success">Savings</td>
+                                <td class="text-end text-muted">-</td>
+                                <td class="text-end text-muted">-</td>
+                                <td id="net-savings-spread" class="text-end text-success">$0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-lg-5">
+            <div class="card p-3 shadow-sm themed-card h-100 mb-0">
+                <h6 class="fw-bold text-center text-secondary mb-2"><i class="bi bi-pie-chart-fill me-1 text-danger"></i> Expense Split</h6>
+                <div class="chart-container" style="height: 240px; position: relative;">
+                    <canvas id="expenseDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card p-3 shadow-sm themed-card card-logger-system h-100 mb-0" id="logger-card">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="theme-icon bg-secondary-light"><i class="bi bi-plus-circle-fill text-secondary"></i></div>
+                    <h4 class="fw-bold m-0 text-white">Log Entry</h4>
+                </div>
+                <form id="transaction-form">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Flow Type</label>
+                            <select id="tx-type" class="form-select form-dark-input" required>
+                                <option value="Expense" selected>Expense</option>
+                                <option value="Income">Income</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3" id="desc-field-container">
+                            <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
+                            <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Amount ($)</label>
+                            <input type="number" id="tx-amount" class="form-control form-dark-input" placeholder="0.00" step="0.01" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">Entry Method</label>
+                            <select id="tx-entry-mode" class="form-select form-dark-input fw-bold text-info">
+                                <option value="expected" selected>Expected Forecast</option>
+                                <option value="actual">Settled (Actual & Exp)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Sector</label>
+                            <select id="tx-cat" class="form-select form-dark-input fw-bold text-danger">
+                                <option value="Food & Groceries" selected>Food & Groceries</option>
+                                <option value="Utilities">Utilities & Bills</option>
+                                <option value="Shopping">Lifestyle & Shopping</option>
+                                <option value="Debts">Debts & Repayments</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2 d-none" id="custom-desc-container">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-10">
+                            <label class="form-label small fw-bold text-success">Specify Custom Income Statement</label>
+                            <input type="text" id="tx-desc-custom" class="form-control form-dark-input" placeholder="e.g. Thomas Secondary Grant Pool">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 mt-3 fw-bold shadow-sm">Submit Entry</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-xl-4 col-lg-5">
+            <div class="card p-3 shadow-sm old-school-calc h-100 mb-0">
+                <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-secondary">
+                    <span class="calc-brand"><i class="bi bi-cpu-fill me-1"></i> LEDGER MATIC-80 PRO</span>
+                    <span class="badge bg-dark text-success system-status-txt">FORMULA ENGINE</span>
+                </div>
+                <div class="row g-2 h-calc-row flex-grow-1">
                     <div class="col-7 d-flex flex-column justify-content-between">
                         <div>
-                            <div id="calc-screen" class="calc-display mb-2 text-end px-2">0</div>
+                            <div id="calc-screen" class="calc-display mb-2 text-end px-2 py-1">0</div>
                             <div class="calc-grid">
                                 <button class="btn btn-calc-clear" onclick="pressCalcKey('C')">C</button>
                                 <button class="btn btn-calc-op" onclick="pressCalcKey('/')">÷</button>
                                 <button class="btn btn-calc-op" onclick="pressCalcKey('*')">×</button>
                                 <button class="btn btn-calc-op" onclick="pressCalcKey('-')">−</button>
-                                
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('7')">7</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('8')">8</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('9')">9</button>
                                 <button class="btn btn-calc-op" onclick="pressCalcKey('+')">+</button>
-                                
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('4')">4</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('5')">5</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('6')">6</button>
                                 <button class="btn btn-calc-eq" onclick="pressCalcKey('=')">=</button>
-                                
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('1')">1</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('2')">2</button>
                                 <button class="btn btn-calc-num" onclick="pressCalcKey('3')">3</button>
@@ -171,171 +281,142 @@
                     </div>
                     <div class="col-5 border-start border-secondary ps-2 d-flex flex-column justify-content-between">
                         <div class="flex-grow-1 d-flex flex-column">
-                            <div class="tape-title text-muted mb-1">AUDIT TAPE</div>
+                            <div class="tape-title text-muted mb-1"><i class="bi bi-receipt-cutoff me-1"></i> AUDIT TAPE</div>
                             <div id="calc-tape" class="calc-history-tape flex-grow-1">
                                 <div class="tape-row empty-tape-msg">Tape Empty</div>
                             </div>
                         </div>
-                        <button class="btn btn-xs btn-outline-secondary mt-1 w-100" style="font-size: 0.65rem;" onclick="clearCalcTape()">Reset</button>
+                        <button class="btn btn-xs btn-outline-secondary mt-2 w-100" style="font-size: 0.65rem;" onclick="clearCalcTape()">Reset Tape</button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="col-xl-7 col-lg-6">
-            <div class="card p-3 mb-3 shadow-sm themed-card card-logger-system" id="logger-card">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="theme-icon bg-secondary-light"><i class="bi bi-plus-circle-fill text-secondary"></i></div>
-                    <h5 class="fw-bold m-0 text-dark">Log Target Entry</h5>
+    <div class="row g-4 mb-4 d-none">
+        <div class="col-12">
+            <div class="card p-3 shadow-sm themed-card">
+                <h6 class="fw-bold text-center text-secondary mb-2"><i class="bi bi-bar-chart-fill me-1 text-success"></i> Velocity Track</h6>
+                <div class="chart-container" style="height: 150px;">
+                    <canvas id="actualVsGoalChart"></canvas>
                 </div>
-                <form id="transaction-form">
-                    <div class="row g-2">
-                        <div class="col-6 col-md-2">
-                            <label class="form-label small fw-bold text-muted">Flow Type</label>
-                            <select id="tx-type" class="form-select form-dark-input" required>
-                                <option value="Expense" selected>Expense</option>
-                                <option value="Income">Income</option>
-                            </select>
-                        </div>
-                        <div class="col-6 col-md-3" id="desc-field-container">
-                            <label class="form-label small fw-bold text-muted">Merchant</label>
-                            <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <label class="form-label small fw-bold text-muted">Amount ($)</label>
-                            <input type="number" id="tx-amount" class="form-control form-dark-input" placeholder="0.00" step="0.01" required>
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold text-muted">Method</label>
-                            <select id="tx-entry-mode" class="form-select form-dark-input fw-bold text-info">
-                                <option value="expected" selected>Expected</option>
-                                <option value="actual">Settled</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-2">
-                            <label class="form-label small fw-bold text-muted">Sector</label>
-                            <select id="tx-cat" class="form-select form-dark-input">
-                                <option value="Food & Groceries">Food & Groceries</option>
-                                <option value="Utilities">Utilities</option>
-                                <option value="Shopping">Shopping</option>
-                                <option value="Savings">Savings</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mt-2 d-none" id="custom-desc-container">
-                        <div class="col-12">
-                            <label class="form-label small fw-bold text-success">Specify Custom Income Statement</label>
-                            <input type="text" id="tx-desc-custom" class="form-control form-dark-input" placeholder="e.g. Other Pool">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary-custom w-100 mt-2 fw-bold shadow-sm">Append Entry</button>
-                </form>
             </div>
+        </div>
+    </div>
 
-            <div class="row g-2 mb-3">
-                <div class="col-12 col-md-6">
-                    <div class="card shadow-sm themed-card financial-card-income overflow-hidden">
-                        <div class="card-financial-header bg-income text-white px-2 py-1 d-flex align-items-center justify-content-between">
-                            <span class="fw-bold"><i class="bi bi-wallet2 me-1"></i>Inflows</span>
-                        </div>
-                        <div class="p-1">
-                            <div class="table-responsive ledger-box">
-                                <table class="table table-sm table-striped table-hover align-middle m-0 table-income">
-                                    <thead class="text-center"><tr><th>Source</th><th>Exp</th><th>Act</th><th class="crud-actions">Edit</th></tr></thead>
-                                    <tbody id="income-log-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm themed-card financial-card-income overflow-hidden mb-0">
+                <div class="card-financial-header bg-income text-white px-3 py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold"><i class="bi bi-wallet2 me-2"></i>Income Master Ledger</span>
+                    <span class="badge bg-dark text-success shadow-xs border border-success border-opacity-20">Inflow Tracker</span>
                 </div>
-                
-                <div class="col-12 col-md-6">
-                    <div class="card shadow-sm themed-card financial-card-expenses overflow-hidden">
-                        <div class="card-financial-header bg-expense text-white px-2 py-1 d-flex align-items-center justify-content-between">
-                            <span class="fw-bold"><i class="bi bi-credit-card me-1"></i>Outflows</span>
-                        </div>
-                        <div class="p-1">
-                            <div class="table-responsive ledger-box">
-                                <table class="table table-sm table-striped table-hover align-middle m-0 table-expenses">
-                                    <thead class="text-center"><tr><th>Merchant</th><th>Exp</th><th>Act</th><th>Cat</th><th class="crud-actions">Edit</th></tr></thead>
-                                    <tbody id="expense-log-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
+                <div class="p-2">
+                    <div class="table-responsive ledger-box" style="max-height: 280px;">
+                        <table class="table table-sm table-dark-custom table-striped table-hover align-middle m-0 table-income">
+                            <thead class="text-center"><tr><th>Source Asset</th><th>Expected</th><th>Actual</th><th class="crud-actions">Edit</th></tr></thead>
+                            <tbody id="income-log-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <h5 class="fw-bold text-dark mb-2 sector-heading"><i class="bi bi-tags-fill text-warning me-1"></i>Envelopes</h5>
-            
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card card-sub-table sub-themed-food shadow-sm overflow-hidden">
-                        <div class="sub-hdr-bar color-food fw-bold px-2 py-1 text-center border-bottom">Food</div>
-                        <div class="p-1">
-                            <div class="sub-table-summary table-summary-dark p-1 rounded mb-1 text-center d-flex justify-content-around font-xs">
-                                <div><span id="sub-goal-food" class="fw-bold text-dark">$0.00</span></div>
-                                <div><span id="sub-act-food" class="fw-bold text-danger-heavy">$0.00</span></div>
-                            </div>
-                            <div class="table-responsive sub-ledger-box">
-                                <table class="table table-sm align-middle m-0 table-borderless">
-                                    <tbody id="sub-body-food"></tbody>
-                                </table>
-                            </div>
-                        </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm themed-card financial-card-expenses overflow-hidden mb-0">
+                <div class="card-financial-header bg-expense text-white px-3 py-2 d-flex align-items-center justify-content-between">
+                    <span class="fw-bold"><i class="bi bi-credit-card me-2"></i>Expenses Master Ledger</span>
+                    <span class="badge bg-dark text-danger shadow-xs border border-danger border-opacity-20">Outflow Leakage</span>
+                </div>
+                <div class="p-2">
+                    <div class="table-responsive ledger-box" style="max-height: 280px;">
+                        <table class="table table-sm table-dark-custom table-striped table-hover align-middle m-0 table-expenses">
+                            <thead class="text-center"><tr><th>Target Merchant</th><th>Expected</th><th>Actual</th><th>Cat</th><th class="crud-actions">Edit</th></tr></thead>
+                            <tbody id="expense-log-body"></tbody>
+                        </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="col-6">
-                    <div class="card card-sub-table sub-themed-utilities shadow-sm overflow-hidden">
-                        <div class="sub-hdr-bar color-utilities fw-bold px-2 py-1 text-center border-bottom">Bills</div>
-                        <div class="p-1">
-                            <div class="sub-table-summary table-summary-dark p-1 rounded mb-1 text-center d-flex justify-content-around font-xs">
-                                <div><span id="sub-goal-utilities" class="fw-bold text-dark">$0.00</span></div>
-                                <div><span id="sub-act-utilities" class="fw-bold text-warning-heavy">$0.00</span></div>
-                            </div>
-                            <div class="table-responsive sub-ledger-box">
-                                <table class="table table-sm align-middle m-0 table-borderless">
-                                    <tbody id="sub-body-utilities"></tbody>
-                                </table>
-                            </div>
-                        </div>
+    <div class="d-flex align-items-center gap-2 mb-3 mt-4">
+        <div class="theme-icon bg-warning-light"><i class="bi bi-tags-fill text-warning"></i></div>
+        <h4 class="fw-bold m-0 text-white">Expenses Breakdowns</h4>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-sub-table sub-themed-food shadow-sm overflow-hidden h-100 mb-0">
+                <div class="sub-hdr-bar color-food fw-bold px-3 py-1 text-center border-bottom"><i class="bi bi-basket3-fill me-1"></i> Food & Groceries</div>
+                <div class="p-2">
+                    <div class="sub-table-summary table-summary-dark p-2 rounded mb-2 text-center d-flex justify-content-around border border-secondary border-opacity-20">
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Projected</small> <span id="sub-goal-food" class="fw-bold text-white">$0.00</span></div>
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Settled</small> <span id="sub-act-food" class="fw-bold text-danger-heavy">$0.00</span></div>
+                    </div>
+                    <div class="table-responsive sub-ledger-box">
+                        <table class="table table-sm table-dark-custom align-middle m-0 table-borderless">
+                            <thead><tr class="text-center bg-dark text-secondary font-xs border-bottom border-secondary border-opacity-30"><th>Desc</th><th>Exp</th><th>Act</th></tr></thead>
+                            <tbody id="sub-body-food"></tbody>
+                        </table>
                     </div>
                 </div>
-
-                <div class="col-6">
-                    <div class="card card-sub-table sub-themed-shopping shadow-sm overflow-hidden">
-                        <div class="sub-hdr-bar color-shopping fw-bold px-2 py-1 text-center border-bottom">Shop</div>
-                        <div class="p-1">
-                            <div class="sub-table-summary table-summary-dark p-1 rounded mb-1 text-center d-flex justify-content-around font-xs">
-                                <div><span id="sub-goal-shopping" class="fw-bold text-dark">$0.00</span></div>
-                                <div><span id="sub-act-shopping" class="fw-bold text-info-heavy">$0.00</span></div>
-                            </div>
-                            <div class="table-responsive sub-ledger-box">
-                                <table class="table table-sm align-middle m-0 table-borderless">
-                                    <tbody id="sub-body-shopping"></tbody>
-                                </table>
-                            </div>
-                        </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-sub-table sub-themed-utilities shadow-sm overflow-hidden h-100 mb-0">
+                <div class="sub-hdr-bar color-utilities fw-bold px-3 py-1 text-center border-bottom"><i class="bi bi-lightning-charge-fill me-1"></i> Utilities & Housing</div>
+                <div class="p-2">
+                    <div class="sub-table-summary table-summary-dark p-2 rounded mb-2 text-center d-flex justify-content-around border border-secondary border-opacity-20">
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Projected</small> <span id="sub-goal-utilities" class="fw-bold text-white">$0.00</span></div>
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Settled</small> <span id="sub-act-utilities" class="fw-bold text-warning-heavy">$0.00</span></div>
+                    </div>
+                    <div class="table-responsive sub-ledger-box">
+                        <table class="table table-sm table-dark-custom align-middle m-0 table-borderless">
+                            <thead><tr class="text-center bg-dark text-secondary font-xs border-bottom border-secondary border-opacity-30"><th>Desc</th><th>Exp</th><th>Act</th></tr></thead>
+                            <tbody id="sub-body-utilities"></tbody>
+                        </table>
                     </div>
                 </div>
-
-                <div class="col-6">
-                    <div class="card card-sub-table sub-themed-savings shadow-sm overflow-hidden">
-                        <div class="sub-hdr-bar color-savings fw-bold px-2 py-1 text-center border-bottom">Save</div>
-                        <div class="p-1">
-                            <div class="sub-table-summary table-summary-dark p-1 rounded mb-1 text-center d-flex justify-content-around font-xs">
-                                <div><span id="sub-goal-savings" class="fw-bold text-dark">$0.00</span></div>
-                                <div><span id="sub-act-savings" class="fw-bold text-success-heavy">$0.00</span></div>
-                            </div>
-                            <div class="table-responsive sub-ledger-box">
-                                <table class="table table-sm align-middle m-0 table-borderless">
-                                    <tbody id="sub-body-savings"></tbody>
-                                </table>
-                            </div>
-                        </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-sub-table sub-themed-shopping shadow-sm overflow-hidden h-100 mb-0">
+                <div class="sub-hdr-bar color-shopping fw-bold px-3 py-1 text-center border-bottom"><i class="bi bi-bag-heart-fill me-1"></i> Shopping & Lifestyle</div>
+                <div class="p-2">
+                    <div class="sub-table-summary table-summary-dark p-2 rounded mb-2 text-center d-flex justify-content-around border border-secondary border-opacity-20">
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Projected</small> <span id="sub-goal-shopping" class="fw-bold text-white">$0.00</span></div>
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Settled</small> <span id="sub-act-shopping" class="fw-bold text-info-heavy">$0.00</span></div>
+                    </div>
+                    <div class="table-responsive sub-ledger-box">
+                        <table class="table table-sm table-dark-custom align-middle m-0 table-borderless">
+                            <thead><tr class="text-center bg-dark text-secondary font-xs border-bottom border-secondary border-opacity-30"><th>Desc</th><th>Exp</th><th>Act</th></tr></thead>
+                            <tbody id="sub-body-shopping"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-sub-table sub-themed-debts shadow-sm overflow-hidden h-100 mb-0">
+                <div class="sub-hdr-bar color-debts fw-bold px-3 py-1 text-center border-bottom">
+                    <i class="bi bi-bank-fill me-1 text-purple"></i> Debts & Repayments
+                </div>
+                <div class="p-2">
+                    <div class="sub-table-summary table-summary-dark p-2 rounded mb-2 text-center d-flex justify-content-around border border-secondary border-opacity-20">
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Projected</small> <span id="sub-goal-debts" class="fw-bold text-white">$0.00</span></div>
+                        <div><small class="text-muted text-uppercase d-block font-xs fw-bold">Settled</small> <span id="sub-act-debts" class="fw-bold text-white">$0.00</span></div>
+                    </div>
+                    <div class="table-responsive sub-ledger-box">
+                        <table class="table table-sm table-dark-custom align-middle m-0 table-borderless">
+                            <thead>
+                                <tr class="text-center bg-dark text-secondary font-xs border-bottom border-secondary border-opacity-30">
+                                    <th class="text-start ps-2">Desc</th>
+                                    <th class="text-end">Exp</th>
+                                    <th class="text-end pe-2">Act</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sub-body-debts"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -344,41 +425,38 @@
 </div>
 
 <div class="modal fade" id="crudModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-sm p-3">
-    <div class="modal-content bg-white text-dark border-0 shadow">
-      <div class="modal-header py-2">
-        <h6 class="modal-title fw-bold">Update Settle Amount</h6>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content custom-financial-modal bg-dark-card border border-secondary border-opacity-30 text-white">
+      <div class="modal-header py-2 text-white bg-black bg-opacity-40 border-bottom border-secondary border-opacity-20">
+        <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-1"></i> Update Settle Amount</h6>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body py-2">
+      <div class="modal-body py-3">
         <input type="hidden" id="edit-idx">
         <div class="mb-2">
-            <label class="form-label small fw-bold">Item Label</label>
-            <input type="text" id="edit-desc" class="form-control form-control-sm" readonly>
+            <label class="form-label small fw-bold text-muted">Item Label</label>
+            <input type="text" id="edit-desc" class="form-control form-control-sm form-dark-input" readonly>
         </div>
         <div class="mb-2">
-            <label class="form-label small fw-bold">Expected Forecast ($)</label>
-            <input type="number" id="edit-expected" class="form-control form-control-sm" step="0.01">
+            <label class="form-label small fw-bold text-muted">Expected Forecast ($)</label>
+            <input type="number" id="edit-expected" class="form-control form-control-sm form-dark-input" step="0.01">
         </div>
         <div class="mb-0">
             <label class="form-label small fw-bold text-info">Actual Settled Balance ($)</label>
-            <input type="number" id="edit-actual" class="form-control form-control-sm fw-bold" step="0.01" autofocus>
+            <input type="number" id="edit-actual" class="form-control form-control-sm border-info fw-bold form-dark-input" step="0.01" autofocus>
         </div>
       </div>
-      <div class="modal-footer py-1">
+      <div class="modal-footer py-1 bg-black bg-opacity-20 border-top border-secondary border-opacity-20">
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-sm btn-success fw-bold" onclick="commitCrudEdit()">Commit Post</button>
+        <button type="button" class="btn btn-sm btn-info text-dark fw-bold" onclick="commitCrudEdit()">Commit Post</button>
       </div>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="app.js"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  }
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script src="app.js"></script>
 </body>
 </html>
