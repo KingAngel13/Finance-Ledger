@@ -6,14 +6,12 @@ firebase.initializeApp({
   messagingSenderId: "1094421632135",
   appId: "1:1094421632135:web:a748ad8579178834d5d422"
 });
-
 const db = firebase.firestore();
 
 let currentWorkingMonth = document.getElementById('budget-month').value;
 let transactions = [];
 let isHistoricalMode = false;
-let donutChart, barChart;
-let bsModal;
+let donutChart, bsModal;
 
 document.addEventListener("DOMContentLoaded", function() {
     bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
@@ -21,9 +19,10 @@ document.addEventListener("DOMContentLoaded", function() {
     setupEventListeners();
     loadMonthData(currentWorkingMonth);
 });
+
 function clearCurrentMonthLogs() {
     if (isHistoricalMode) return;
-    if (!confirm(`⚠️ WARNING: Wipe all entries for ${currentWorkingMonth}?`)) return;
+    if (!confirm("Wipe month?")) return;
     transactions = [];
     saveMonthData();
     calculateBudget();
@@ -31,56 +30,29 @@ function clearCurrentMonthLogs() {
 
 function archiveCurrentMonth() {
     if (isHistoricalMode) return;
-    if(transactions.length === 0) return alert("Nothing to archive!");
-    if(!confirm("Lock this month into history?")) return;
-    db.collection("budget_archives").doc(currentWorkingMonth).set({
-        month: currentWorkingMonth,
-        ledgerSnapshot: [...transactions]
-    }).then(() => { 
-        alert("Locked to history!"); 
-        loadMonthData(currentWorkingMonth); 
-    });
+    db.collection("budget_archives").doc(currentWorkingMonth).set({ ledgerSnapshot: transactions });
+    alert("Archived!");
+    loadMonthData(currentWorkingMonth);
 }
 
-function deleteSelectedArchiveRecord() {
-    if (!isHistoricalMode) return;
-    if (!confirm("Unlock this archive?")) return;
-    db.collection("budget_archives").doc(currentWorkingMonth).delete().then(() => {
-        alert("Archive unlocked.");
-        loadMonthData(currentWorkingMonth);
-    });
+function commitCrudEdit() {
+    const idx = document.getElementById('edit-idx').value;
+    transactions[idx].expected = parseFloat(document.getElementById('edit-expected').value);
+    transactions[idx].actual = parseFloat(document.getElementById('edit-actual').value);
+    bsModal.hide();
+    saveMonthData();
+    calculateBudget();
 }
-
-function pressCalcKey(key) {
-    const screen = document.getElementById('calc-screen');
-    if (!screen) return;
-    if (key === 'C') { 
-        screen.innerText = '0'; 
-    } else if (key === '=') {
-        try { screen.innerText = eval(screen.innerText.replace('x', '*')); } 
-        catch { screen.innerText = 'Error'; }
-    } else {
-        if (screen.innerText === '0') screen.innerText = key;
-        else screen.innerText += key;
-    }
 
 function saveMonthData() {
     if (isHistoricalMode) return;
     db.collection("budget_months").doc(currentWorkingMonth).set({ ledger: transactions });
 }
 
-function loadMonthData(monthName) {
-    db.collection("budget_archives").doc(monthName).get().then((archiveDoc) => {
-        if (archiveDoc.exists) {
-            isHistoricalMode = true;
-            transactions = archiveDoc.data().ledgerSnapshot || [];
-        } else {
-            isHistoricalMode = false;
-            db.collection("budget_months").doc(monthName).get().then((liveDoc) => {
-                transactions = liveDoc.exists ? liveDoc.data().ledger : [];
-                calculateBudget();
-            });
-        }
+function loadMonthData(month) {
+    currentWorkingMonth = month;
+    db.collection("budget_months").doc(month).get().then(doc => {
+        transactions = doc.exists ? doc.data().ledger : [];
         calculateBudget();
     });
 }
