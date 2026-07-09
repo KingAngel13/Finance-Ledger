@@ -196,102 +196,59 @@
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-xl-8 col-lg-7">
-            <div class="card p-3 shadow-sm themed-card card-logger-system h-100 mb-0" id="logger-card">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="theme-icon bg-secondary-light"><i class="bi bi-plus-circle-fill text-secondary"></i></div>
-                    <h4 class="fw-bold m-0 text-white">Log Entry</h4>
-                </div>
-                <form id="transaction-form">
-                    <div class="row g-2 align-items-end">
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold text-muted">Flow Type</label>
-                            <select id="tx-type" class="form-select form-dark-input" required>
-                                <option value="Expense" selected>Expense</option>
-                                <option value="Income">Income</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3" id="desc-field-container">
-                            <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
-                            <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold text-muted">Amount ($)</label>
-                            <input type="number" id="tx-amount" class="form-control form-dark-input" placeholder="0.00" step="0.01" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small fw-bold text-muted">Entry Method</label>
-                            <select id="tx-entry-mode" class="form-select form-dark-input fw-bold text-info">
-                                <option value="expected" selected>Expected Forecast</option>
-                                <option value="actual">Settled (Actual & Exp)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label small fw-bold text-muted">Sector</label>
-                            <select id="tx-cat" class="form-select form-dark-input fw-bold text-danger">
-                                <option value="Food & Groceries" selected>Food & Groceries</option>
-                                <option value="Utilities">Utilities & Bills</option>
-                                <option value="Shopping">Lifestyle & Shopping</option>
-                                <option value="Debts">Debts & Repayments</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-2 mt-2 d-none" id="custom-desc-container">
-                        <div class="col-md-2"></div>
-                        <div class="col-md-10">
-                            <label class="form-label small fw-bold text-success">Specify Custom Income Statement</label>
-                            <input type="text" id="tx-desc-custom" class="form-control form-dark-input" placeholder="e.g. Thomas Secondary Grant Pool">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary-custom w-100 mt-3 fw-bold shadow-sm">Submit Entry</button>
-                </form>
+   <div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card p-3 shadow-sm themed-card card-logger-system h-100 mb-0" id="logger-card">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="theme-icon bg-secondary-light"><i class="bi bi-plus-circle-fill text-secondary"></i></div>
+                <h4 class="fw-bold m-0 text-white">Log Entry</h4>
             </div>
-        </div>
-        <div class="col-xl-4 col-lg-5">
-            <div class="card p-3 shadow-sm old-school-calc h-100 mb-0">
-                <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom border-secondary">
-                    <span class="calc-brand"><i class="bi bi-cpu-fill me-1"></i> LEDGER MATIC-80 PRO</span>
-                    <span class="badge bg-dark text-success system-status-txt">FORMULA ENGINE</span>
-                </div>
-                <div class="row g-2 h-calc-row flex-grow-1">
-                    <div class="col-7 d-flex flex-column justify-content-between">
-                        <div>
-                            <div id="calc-screen" class="calc-display mb-2 text-end px-2 py-1">0</div>
-                            <div class="calc-grid">
-                                <button class="btn btn-calc-clear" onclick="pressCalcKey('C')">C</button>
-                                <button class="btn btn-calc-op" onclick="pressCalcKey('/')">÷</button>
-                                <button class="btn btn-calc-op" onclick="pressCalcKey('*')">×</button>
-                                <button class="btn btn-calc-op" onclick="pressCalcKey('-')">−</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('7')">7</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('8')">8</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('9')">9</button>
-                                <button class="btn btn-calc-op" onclick="pressCalcKey('+')">+</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('4')">4</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('5')">5</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('6')">6</button>
-                                <button class="btn btn-calc-eq" onclick="pressCalcKey('=')">=</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('1')">1</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('2')">2</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('3')">3</button>
-                                <button class="btn btn-calc-num btn-zero" onclick="pressCalcKey('0')">0</button>
-                                <button class="btn btn-calc-num" onclick="pressCalcKey('.')">.</button>
-                            </div>
-                        </div>
+            <form id="transaction-form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Flow Type</label>
+                        <select id="tx-type" class="form-select form-dark-input" required>
+                            <option value="Expense" selected>Expense</option>
+                            <option value="Income">Income</option>
+                        </select>
                     </div>
-                    <div class="col-5 border-start border-secondary ps-2 d-flex flex-column justify-content-between">
-                        <div class="flex-grow-1 d-flex flex-column">
-                            <div class="tape-title text-muted mb-1"><i class="bi bi-receipt-cutoff me-1"></i> AUDIT TAPE</div>
-                            <div id="calc-tape" class="calc-history-tape flex-grow-1">
-                                <div class="tape-row empty-tape-msg">Tape Empty</div>
-                            </div>
-                        </div>
-                        <button class="btn btn-xs btn-outline-secondary mt-2 w-100" style="font-size: 0.65rem;" onclick="clearCalcTape()">Reset Tape</button>
+                    <div class="col-md-4" id="desc-field-container">
+                        <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
+                        <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Amount ($)</label>
+                        <input type="number" id="tx-amount" class="form-control form-dark-input" placeholder="0.00" step="0.01" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Entry Method</label>
+                        <select id="tx-entry-mode" class="form-select form-dark-input fw-bold text-info">
+                            <option value="expected" selected>Expected Forecast</option>
+                            <option value="actual">Settled (Actual & Exp)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Sector</label>
+                        <select id="tx-cat" class="form-select form-dark-input fw-bold text-danger">
+                            <option value="Food & Groceries" selected>Food & Groceries</option>
+                            <option value="Utilities">Utilities & Bills</option>
+                            <option value="Shopping">Lifestyle & Shopping</option>
+                            <option value="Debts">Debts & Repayments</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+                <div class="row g-2 mt-2 d-none" id="custom-desc-container">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-10">
+                        <label class="form-label small fw-bold text-success">Specify Custom Income Statement</label>
+                        <input type="text" id="tx-desc-custom" class="form-control form-dark-input" placeholder="e.g. Thomas Secondary Grant Pool">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100 mt-3 fw-bold shadow-sm">Submit Entry</button>
+            </form>
         </div>
     </div>
+</div>
 
     <div class="row g-4 mb-4 d-none">
         <div class="col-12">
