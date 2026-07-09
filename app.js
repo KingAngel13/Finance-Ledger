@@ -27,6 +27,9 @@ function setupEventListeners() {
 
     typeSelect.addEventListener('change', function() {
         const catSelect = document.getElementById('tx-cat');
+        const container = document.getElementById('desc-field-container');
+        const customContainer = document.getElementById('custom-desc-container');
+        
         if (this.value === 'Income') {
             catSelect.disabled = true;
             catSelect.value = "";
