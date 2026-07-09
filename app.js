@@ -14,10 +14,16 @@ document.addEventListener("DOMContentLoaded", function() {
     setupEventListeners();
 });
 
+That is exactly why it isn't working—if the ID isn't in your app.js code, the event listener can't find the element to toggle.
+
+You need to make sure both the HTML has that id and the JavaScript references it correctly. Here is exactly how to fix it:
+
+1. Update your app.js
+Look for the setupEventListeners function in your app.js file and ensure it looks like this. I have added the variable definitions inside the listener:
+
+JavaScript
 function setupEventListeners() {
     const typeSelect = document.getElementById('tx-type');
-    const container = document.getElementById('desc-field-container');
-    const customContainer = document.getElementById('custom-desc-container');
     const monthSelect = document.getElementById('budget-month');
 
     monthSelect.addEventListener('change', function() {
@@ -27,35 +33,39 @@ function setupEventListeners() {
 
     typeSelect.addEventListener('change', function() {
         const catSelect = document.getElementById('tx-cat');
+        // Define these variables INSIDE the listener so they are found every time
         const container = document.getElementById('desc-field-container');
         const customContainer = document.getElementById('custom-desc-container');
-        
+
         if (this.value === 'Income') {
             catSelect.disabled = true;
             catSelect.value = "";
-            container.innerHTML = `
-                <label class="form-label small fw-bold text-muted">Description</label>
-                <select id="tx-desc-dropdown" class="form-select form-dark-input" required>
-                    <option value="Radius Rimu Park">Radius Rimu Park</option>
-                    <option value="St. Pierre's Sushi">St. Pierre's Sushi</option>
-                    <option value="McDonald's Kamo">McDonald's Kamo</option>
-                    <option value="Radius Potter Home">Radius Potter Home</option>
-                    <option value="Others">Others</option>
-                </select>
-            `;
-            document.getElementById('tx-desc-dropdown').addEventListener('change', handleIncomeDescChange);
+            // Ensure this container exists in your HTML
+            if(container) {
+                container.innerHTML = `
+                    <label class="form-label small fw-bold text-muted">Description</label>
+                    <select id="tx-desc-dropdown" class="form-select form-dark-input" required>
+                        <option value="Radius Rimu Park">Radius Rimu Park</option>
+                        <option value="St. Pierre's Sushi">St. Pierre's Sushi</option>
+                        <option value="McDonald's Kamo">McDonald's Kamo</option>
+                        <option value="Radius Potter Home">Radius Potter Home</option>
+                        <option value="Others">Others</option>
+                    </select>
+                `;
+            }
         } else {
             catSelect.disabled = false;
             catSelect.value = "Food & Groceries";
-            customContainer.classList.add('d-none');
-            document.getElementById('tx-desc-custom').required = false;
-            container.innerHTML = `
-                <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
-                <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
-            `;
+            if(customContainer) customContainer.classList.add('d-none');
+            if(container) {
+                container.innerHTML = `
+                    <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
+                    <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
+                `;
+            }
         }
     });
-
+}
     document.getElementById('transaction-form').addEventListener('submit', function(e) {
         e.preventDefault();
         if (isHistoricalMode) return;
