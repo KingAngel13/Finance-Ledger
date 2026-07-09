@@ -8,6 +8,7 @@ firebase.initializeApp({
 });
 
 const db = firebase.firestore();
+
 let currentWorkingMonth = document.getElementById('budget-month').value;
 let transactions = [];
 let isHistoricalMode = false;
@@ -18,8 +19,71 @@ document.addEventListener("DOMContentLoaded", function() {
     bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
     initCharts();
     setupEventListeners();
-    loadMonthData(document.getElementById('budget-month').value);
+    loadMonthData(currentWorkingMonth);
 });
+function clearCurrentMonthLogs() {
+    if (isHistoricalMode) return;
+    if (!confirm(`⚠️ WARNING: Wipe all entries for ${currentWorkingMonth}?`)) return;
+    transactions = [];
+    saveMonthData();
+    calculateBudget();
+}
+
+function archiveCurrentMonth() {
+    if (isHistoricalMode) return;
+    if(transactions.length === 0) return alert("Nothing to archive!");
+    if(!confirm("Lock this month into history?")) return;
+    db.collection("budget_archives").doc(currentWorkingMonth).set({
+        month: currentWorkingMonth,
+        ledgerSnapshot: [...transactions]
+    }).then(() => { 
+        alert("Locked to history!"); 
+        loadMonthData(currentWorkingMonth); 
+    });
+}
+
+function deleteSelectedArchiveRecord() {
+    if (!isHistoricalMode) return;
+    if (!confirm("Unlock this archive?")) return;
+    db.collection("budget_archives").doc(currentWorkingMonth).delete().then(() => {
+        alert("Archive unlocked.");
+        loadMonthData(currentWorkingMonth);
+    });
+}
+
+function pressCalcKey(key) {
+    const screen = document.getElementById('calc-screen');
+    if (!screen) return;
+    if (key === 'C') { 
+        screen.innerText = '0'; 
+    } else if (key === '=') {
+        try { screen.innerText = eval(screen.innerText.replace('x', '*')); } 
+        catch { screen.innerText = 'Error'; }
+    } else {
+        if (screen.innerText === '0') screen.innerText = key;
+        else screen.innerText += key;
+    }
+
+function saveMonthData() {
+    if (isHistoricalMode) return;
+    db.collection("budget_months").doc(currentWorkingMonth).set({ ledger: transactions });
+}
+
+function loadMonthData(monthName) {
+    db.collection("budget_archives").doc(monthName).get().then((archiveDoc) => {
+        if (archiveDoc.exists) {
+            isHistoricalMode = true;
+            transactions = archiveDoc.data().ledgerSnapshot || [];
+        } else {
+            isHistoricalMode = false;
+            db.collection("budget_months").doc(monthName).get().then((liveDoc) => {
+                transactions = liveDoc.exists ? liveDoc.data().ledger : [];
+                calculateBudget();
+            });
+        }
+        calculateBudget();
+    });
+}
 
 function setupEventListeners() {
     const typeSelect = document.getElementById('tx-type');
