@@ -1,41 +1,45 @@
-// Local Engine Registrations
-let currentWorkingMonth = document.getElementById('budget-month').value;
-let currentWorkingFortnight = document.getElementById('budget-fortnight').value;
-let allMonthsData = JSON.parse(localStorage.getItem('budget_system_all_months')) || {};
-let historyArchives = JSON.parse(localStorage.getItem('budget_history_archives')) || [];
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCvIgYRRmdQkLeWUpe8sjROyFILvBVqEmc",
+  authDomain: "financial-ledger-315ae.firebaseapp.com",
+  projectId: "financial-ledger-315ae",
+  storageBucket: "financial-ledger-315ae.firebasestorage.app",
+  messagingSenderId: "1094421632135",
+  appId: "1:1094421632135:web:a748ad8579178834d5d422"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentWorkingMonth = document.getElementById('budget-month').value;
 let transactions = [];
 let isHistoricalMode = false;
 let donutChart, barChart;
 let bsModal;
 
-// Vintage Calculator Properties
-let calcExpressionStr = ""; 
-let isCalcResetOnNextKey = false;
-let calcHistoryTape = [];
-
 document.addEventListener("DOMContentLoaded", function() {
     bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
     initCharts();
-    refreshActiveTargetPeriod();
+    loadMonthData(document.getElementById('budget-month').value);
     setupEventListeners();
 });
-
-function refreshActiveTargetPeriod() {
-    currentWorkingMonth = document.getElementById('budget-month').value;
-    currentWorkingFortnight = document.getElementById('budget-fortnight').value;
-    // Creates unique combination key (e.g. "July-1/2")
-    let storageLookupKey = `${currentWorkingMonth}-${currentWorkingFortnight}`;
-    loadMonthData(storageLookupKey);
-}
 
 function setupEventListeners() {
     const typeSelect = document.getElementById('tx-type');
     const container = document.getElementById('desc-field-container');
     const customContainer = document.getElementById('custom-desc-container');
-    
-    document.getElementById('budget-month').addEventListener('change', refreshActiveTargetPeriod);
-    document.getElementById('budget-fortnight').addEventListener('change', refreshActiveTargetPeriod);
+    const monthSelect = document.getElementById('budget-month');
+
+    monthSelect.addEventListener('change', function() {
+        currentWorkingMonth = this.value;
+        loadMonthData(this.value);
+    });
 
     typeSelect.addEventListener('change', function() {
         const catSelect = document.getElementById('tx-cat');
@@ -43,7 +47,7 @@ function setupEventListeners() {
             catSelect.disabled = true;
             catSelect.value = "";
             container.innerHTML = `
-                <label class="form-label small fw-bold text-muted">Source Asset Identity</label>
+                <label class="form-label small fw-bold text-muted">Description</label>
                 <select id="tx-desc-dropdown" class="form-select form-dark-input" required>
                     <option value="Radius Rimu Park">Radius Rimu Park</option>
                     <option value="St. Pierre's Sushi">St. Pierre's Sushi</option>
@@ -59,7 +63,7 @@ function setupEventListeners() {
             customContainer.classList.add('d-none');
             document.getElementById('tx-desc-custom').required = false;
             container.innerHTML = `
-                <label class="form-label small fw-bold text-muted">Merchant</label>
+                <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
                 <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
             `;
         }
@@ -70,7 +74,7 @@ function setupEventListeners() {
         if (isHistoricalMode) return;
 
         const type = typeSelect.value;
-        const amountTyped = parseFloat(document.getElementById('tx-amount').value) || 0;
+        const inputAmount = parseFloat(document.getElementById('tx-amount').value) || 0;
         const entryMode = document.getElementById('tx-entry-mode').value;
         const cat = document.getElementById('tx-cat').value;
         let finalDescription = "";
@@ -78,7 +82,7 @@ function setupEventListeners() {
         if (type === 'Income') {
             const dropdownVal = document.getElementById('tx-desc-dropdown').value;
             if (dropdownVal === 'Others') {
-                finalDescription = document.getElementById('tx-desc-custom').value.trim() || "Other Income Streams";
+                finalDescription = document.getElementById('tx-desc-custom').value.trim() || "Other Income";
             } else {
                 finalDescription = dropdownVal;
             }
@@ -86,14 +90,28 @@ function setupEventListeners() {
             finalDescription = document.getElementById('tx-desc-text').value.trim();
         }
 
-        let expectedValue = amountTyped;
-        let actualValue = entryMode === 'actual' ? amountTyped : 0;
+        let expectedAmount = 0;
+        let actualAmount = 0;
 
-        transactions.push({ type, desc: finalDescription, expected: expectedValue, actual: actualValue, cat });
+        if (entryMode === 'actual') {
+            expectedAmount = inputAmount;
+            actualAmount = inputAmount;
+        } else {
+            expectedAmount = inputAmount;
+            actualAmount = 0;
+        }
+
+        transactions.push({ 
+            type, 
+            desc: finalDescription, 
+            expected: expectedAmount, 
+            actual: actualAmount, 
+            cat 
+        });
+        
         saveMonthData();
         
         document.getElementById('tx-amount').value = '';
-        document.getElementById('tx-entry-mode').value = 'expected';
         if (type === 'Income') {
             document.getElementById('tx-desc-dropdown').value = 'Radius Rimu Park';
             document.getElementById('tx-desc-custom').value = '';
@@ -101,6 +119,7 @@ function setupEventListeners() {
         } else {
             document.getElementById('tx-desc-text').value = '';
         }
+        
         calculateBudget();
     });
 }
@@ -118,125 +137,80 @@ function handleIncomeDescChange() {
     }
 }
 
-function pressCalcKey(key) {
-    const display = document.getElementById('calc-screen');
-    const operators = ['+', '-', '*', '/'];
-
-    if (key === 'C') {
-        calcExpressionStr = "";
-        display.innerText = "0";
-        isCalcResetOnNextKey = false;
-        return;
-    }
-
-    if (key === '=') {
-        if (calcExpressionStr === "") return;
-        let cleanExpr = calcExpressionStr.trim();
-        if (operators.includes(cleanExpr.slice(-1))) cleanExpr = cleanExpr.slice(0, -1).trim();
-
-        try {
-            let outcome = Function(`"use strict"; return (${cleanExpr})`)();
-            let displayExpr = cleanExpr.replace(/\*/g, '×').replace(/\//g, '÷');
-            pushCalcHistoryTape(`${displayExpr} = <span>$${outcome.toFixed(2)}</span>`);
-            calcExpressionStr = outcome.toString();
-            display.innerText = calcExpressionStr;
-            isCalcResetOnNextKey = true; 
-        } catch (e) {
-            display.innerText = "ERROR";
-            calcExpressionStr = "";
-        }
-        return;
-    }
-
-    if (operators.includes(key)) {
-        if (calcExpressionStr === "") {
-            if (key === '-') { calcExpressionStr = "-"; display.innerText = "-"; }
-            return;
-        }
-        let lastChar = calcExpressionStr.trim().slice(-1);
-        if (operators.includes(lastChar)) {
-            calcExpressionStr = calcExpressionStr.trim().slice(0, -1) + " " + key + " ";
-        } else {
-            calcExpressionStr = calcExpressionStr.trim() + " " + key + " ";
-        }
-        display.innerText = calcExpressionStr.replace(/\*/g, '×').replace(/\//g, '÷');
-        isCalcResetOnNextKey = false;
-    } else {
-        if (isCalcResetOnNextKey) { calcExpressionStr = ""; isCalcResetOnNextKey = false; }
-        if (calcExpressionStr === "0" && key !== '.') calcExpressionStr = "";
-        calcExpressionStr += key;
-        display.innerText = calcExpressionStr.replace(/\*/g, '×').replace(/\//g, '÷');
-    }
-}
-
-function pushCalcHistoryTape(lineItem) {
-    calcHistoryTape.push(lineItem);
-    if (calcHistoryTape.length > 5) calcHistoryTape.shift();
-    renderCalcTape();
-}
-
-function renderCalcTape() {
-    const tapeBox = document.getElementById('calc-tape');
-    if(calcHistoryTape.length === 0) {
-        tapeBox.innerHTML = `<div class="tape-row empty-tape-msg">Tape Empty</div>`;
-        return;
-    }
-    tapeBox.innerHTML = calcHistoryTape.map(row => `<div class="tape-row">${row}</div>`).join('');
-    tapeBox.scrollTop = tapeBox.scrollHeight;
-}
-
-function clearCalcTape() { calcHistoryTape = []; renderCalcTape(); }
-
 function saveMonthData() {
     if (isHistoricalMode) return;
-    let storageLookupKey = `${currentWorkingMonth}-${currentWorkingFortnight}`;
-    allMonthsData[storageLookupKey] = transactions;
-    localStorage.setItem('budget_system_all_months', JSON.stringify(allMonthsData));
+
+    // Save ledger array straight into a centralized cloud document named after the active month split
+    db.collection("budget_months").doc(currentWorkingMonth).set({
+        ledger: transactions
+    })
+    .then(() => {
+        console.log(`Cloud ledger database successfully updated for ${currentWorkingMonth}`);
+    })
+    .catch((error) => {
+        console.error("Error updating centralized cloud document: ", error);
+    });
 }
 
 function triggerManualSaveFeedback() {
     if (isHistoricalMode) return;
     saveMonthData();
-    alert(`📁 Locked into storage for ${currentWorkingMonth} Fortnight ${currentWorkingFortnight}!`);
+    alert(`📁 Draft entries for ${currentWorkingMonth} successfully verified and saved to browser storage!`);
 }
 
 function clearCurrentMonthLogs() {
     if (isHistoricalMode) return;
-    if (!confirm(`⚠️ Flush logs for ${currentWorkingMonth} (${currentWorkingFortnight})?`)) return;
+    if (!confirm(`⚠️ WARNING: Are you sure you want to permanently clear out all entries recorded inside ${currentWorkingMonth}? This cannot be undone.`)) return;
+    
     transactions = [];
     saveMonthData();
     calculateBudget();
+    alert(`${currentWorkingMonth} ledger data wiped clean.`);
 }
 
-function loadMonthData(storageLookupKey) {
-    const historicalRecord = historyArchives.find(r => r.month === storageLookupKey);
-    const deleteArchiveBtn = document.getElementById('delete-archive-btn');
+document.addEventListener("DOMContentLoaded", function() {
+    bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
+    initCharts();
+    setupEventListeners();
+    
+    // Initial fetch trigger
+    loadMonthData(document.getElementById('budget-month').value);
+});
+
+function loadMonthData(monthName) {
     const historicalBadge = document.getElementById('historical-badge');
     const loggerCard = document.getElementById('logger-card');
-    const archiveBtn = document.getElementById('archive-btn');
-    const manualSaveBtn = document.getElementById('manual-save-btn');
-    const clearMonthBtn = document.getElementById('clear-month-btn');
 
-    if (historicalRecord) {
-        isHistoricalMode = true;
-        transactions = historicalRecord.ledgerSnapshot;
-        deleteArchiveBtn.classList.remove('d-none');
-        historicalBadge.classList.remove('d-none');
-        loggerCard.classList.add('opacity-50', 'pe-none');
-        archiveBtn.classList.add('d-none');
-        if (manualSaveBtn) manualSaveBtn.classList.add('d-none');
-        if (clearMonthBtn) clearMonthBtn.classList.add('d-none');
-    } else {
-        isHistoricalMode = false;
-        transactions = allMonthsData[storageLookupKey] || [];
-        deleteArchiveBtn.classList.add('d-none');
-        historicalBadge.classList.add('d-none');
-        loggerCard.classList.remove('opacity-50', 'pe-none');
-        archiveBtn.classList.remove('d-none');
-        if (manualSaveBtn) manualSaveBtn.classList.remove('d-none');
-        if (clearMonthBtn) clearMonthBtn.classList.remove('d-none');
-    }
-    calculateBudget();
+    // First check if there is an archived/locked month on the cloud
+    db.collection("budget_archives").doc(monthName).get().then((archiveDoc) => {
+        if (archiveDoc.exists) {
+            // Found a locked archive entry
+            isHistoricalMode = true;
+            transactions = archiveDoc.data().ledgerSnapshot || [];
+            
+            historicalBadge.classList.remove('d-none');
+            loggerCard.classList.add('opacity-50', 'pe-none');
+            document.getElementById('archive-btn').classList.add('d-none');
+            calculateBudget();
+        } else {
+            // Document is live and editable, pull regular ledger streams
+            isHistoricalMode = false;
+            historicalBadge.classList.add('d-none');
+            loggerCard.classList.remove('opacity-50', 'pe-none');
+            document.getElementById('archive-btn').classList.remove('d-none');
+
+            db.collection("budget_months").doc(monthName).get().then((liveDoc) => {
+                if (liveDoc.exists) {
+                    transactions = liveDoc.data().ledger || [];
+                } else {
+                    transactions = []; // Empty month initialization layer
+                }
+                calculateBudget();
+            });
+        }
+    }).catch((error) => {
+        console.error("Failed to query cloud sync states: ", error);
+    });
 }
 
 function openCrudModal(idx) {
@@ -251,8 +225,10 @@ function openCrudModal(idx) {
 
 function commitCrudEdit() {
     const idx = parseInt(document.getElementById('edit-idx').value);
+    transactions[idx].desc = document.getElementById('edit-desc').value.trim();
     transactions[idx].expected = parseFloat(document.getElementById('edit-expected').value) || 0;
     transactions[idx].actual = parseFloat(document.getElementById('edit-actual').value) || 0;
+    
     bsModal.hide();
     saveMonthData();
     calculateBudget();
@@ -260,7 +236,7 @@ function commitCrudEdit() {
 
 function deleteCrudRow(idx) {
     if (isHistoricalMode) return;
-    if (!confirm("Exterminate this row component?")) return;
+    if (!confirm("Remove this log item entirely?")) return;
     transactions.splice(idx, 1);
     saveMonthData();
     calculateBudget();
@@ -269,7 +245,12 @@ function deleteCrudRow(idx) {
 function calculateBudget() {
     let actInc = 0, expInc = 0;
     let actExp = 0, expExp = 0;
-    let catTotals = { "Food & Groceries": { act: 0, exp: 0 }, "Utilities": { act: 0, exp: 0 }, "Shopping": { act: 0, exp: 0 }, "Savings": { act: 0, exp: 0 } };
+    let catTotals = {
+        "Food & Groceries": { act: 0, exp: 0 },
+        "Utilities": { act: 0, exp: 0 },
+        "Shopping": { act: 0, exp: 0 },
+        "Debts": { act: 0, exp: 0 }
+    };
 
     const incomeBody = document.getElementById('income-log-body');
     const expenseBody = document.getElementById('expense-log-body');
@@ -277,142 +258,280 @@ function calculateBudget() {
         "Food & Groceries": document.getElementById('sub-body-food'),
         "Utilities": document.getElementById('sub-body-utilities'),
         "Shopping": document.getElementById('sub-body-shopping'),
-        "Savings": document.getElementById('sub-body-savings')
+        "Debts": document.getElementById('sub-body-debts')
     };
 
-    incomeBody.innerHTML = ''; expenseBody.innerHTML = '';
-    Object.values(subBodies).forEach(el => el.innerHTML = '');
+    if (incomeBody) incomeBody.innerHTML = '';
+    if (expenseBody) expenseBody.innerHTML = '';
+    Object.values(subBodies).forEach(el => { if (el) el.innerHTML = ''; });
 
     transactions.forEach((t, index) => {
-        const actionButtons = isHistoricalMode ? `-` : `
+        const actionButtons = isHistoricalMode ? `<span class="text-muted small">-</span>` : `
             <div class="d-flex gap-1 justify-content-center">
-                <button type="button" class="btn btn-xs btn-outline-secondary" onclick="openCrudModal(${index})"><i class="bi bi-pencil"></i></button>
-                <button type="button" class="btn btn-xs btn-outline-danger" onclick="deleteCrudRow(${index})"><i class="bi bi-x-lg"></i></button>
+                <button class="btn btn-xs btn-outline-primary" onclick="openCrudModal(${index})"><i class="bi bi-pencil-square"></i></button>
+                <button class="btn btn-xs btn-outline-danger" onclick="deleteCrudRow(${index})"><i class="bi bi-trash"></i></button>
             </div>
         `;
 
         if (t.type === 'Income') {
-            expInc += t.expected; actInc += t.actual;
-            incomeBody.innerHTML += `
-                <tr>
-                    <td class="fw-medium text-truncate" style="max-width:85px;">${t.desc}</td>
-                    <td class="text-end">$${t.expected.toFixed(0)}</td>
-                    <td class="text-end fw-bold text-success">$${t.actual.toFixed(0)}</td>
-                    <td class="text-center">${actionButtons}</td>
-                </tr>`;
+            expInc += t.expected;
+            actInc += t.actual;
+            if (incomeBody) {
+                incomeBody.innerHTML += `
+                    <tr>
+                        <td>${t.desc}</td>
+                        <td class="text-end">$${t.expected.toFixed(2)}</td>
+                        <td class="text-end fw-bold text-success">$${t.actual.toFixed(2)}</td>
+                        <td class="text-center">${actionButtons}</td>
+                    </tr>`;
+            }
         } else {
-            expExp += t.expected; actExp += t.actual;
+            expExp += t.expected;
+            actExp += t.actual;
             if (catTotals.hasOwnProperty(t.cat)) {
                 catTotals[t.cat].exp += t.expected;
                 catTotals[t.cat].act += t.actual;
-                subBodies[t.cat].innerHTML += `
-                    <tr class="font-xs">
-                        <td class="text-truncate" style="max-width:80px;">${t.desc}</td>
-                        <td class="text-end text-muted">$${t.expected.toFixed(0)}</td>
-                        <td class="text-end fw-bold">$${t.actual.toFixed(0)}</td>
+                if (subBodies[t.cat]) {
+                    subBodies[t.cat].innerHTML += `
+                        <tr class="small">
+                            <td>${t.desc}</td>
+                            <td class="text-end text-muted">$${t.expected.toFixed(2)}</td>
+                            <td class="text-end fw-bold">$${t.actual.toFixed(2)}</td>
+                        </tr>`;
+                }
+            }
+            
+            let badgeClass = "bg-secondary";
+            if(t.cat === "Food & Groceries") badgeClass = "bg-danger-subtle text-danger";
+            if(t.cat === "Utilities") badgeClass = "bg-warning-subtle text-dark";
+            if(t.cat === "Shopping") badgeClass = "bg-info-subtle text-info";
+            if(t.cat === "Debts") badgeClass = "bg-warning text-dark";
+
+            if (expenseBody) {
+                expenseBody.innerHTML += `
+                    <tr>
+                        <td>${t.desc}</td>
+                        <td class="text-end">$${t.expected.toFixed(2)}</td>
+                        <td class="text-end fw-bold text-danger">$${t.actual.toFixed(2)}</td>
+                        <td class="text-center"><span class="badge ${badgeClass}" style="font-size:0.7rem;">${t.cat.split(' ')[0]}</span></td>
+                        <td class="text-center">${actionButtons}</td>
                     </tr>`;
             }
-
-            expenseBody.innerHTML += `
-                <tr>
-                    <td class="fw-medium text-truncate" style="max-width:80px;">${t.desc}</td>
-                    <td class="text-end">$${t.expected.toFixed(0)}</td>
-                    <td class="text-end fw-bold text-danger">$${t.actual.toFixed(0)}</td>
-                    <td class="text-center"><span class="badge bg-secondary font-xs" style="padding:2px 4px;">${t.cat.split(' ')[0]}</span></td>
-                    <td class="text-center">${actionButtons}</td>
-                </tr>`;
         }
     });
 
-    Object.keys(catTotals).forEach(cKey => {
-        const idSafe = cKey.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-        const elementId = idSafe === 'food-groceries' ? 'food' : idSafe;
-        document.getElementById(`sub-goal-${elementId}`).innerText = `$${catTotals[cKey].exp.toFixed(0)}`;
-        document.getElementById(`sub-act-${elementId}`).innerText = `$${catTotals[cKey].act.toFixed(0)}`;
-    });
+    if(document.getElementById('sum-expected-income')) document.getElementById('sum-expected-income').innerText = `$${expInc.toFixed(2)}`;
+    if(document.getElementById('sum-expected-expenses')) document.getElementById('sum-expected-expenses').innerText = `$${expExp.toFixed(2)}`;
+    if(document.getElementById('sum-expected-food')) document.getElementById('sum-expected-food').innerText = `$${catTotals["Food & Groceries"].exp.toFixed(2)}`;
+    if(document.getElementById('sum-expected-utilities')) document.getElementById('sum-expected-utilities').innerText = `$${catTotals["Utilities"].exp.toFixed(2)}`;
+    if(document.getElementById('sum-expected-shopping')) document.getElementById('sum-expected-shopping').innerText = `$${catTotals["Shopping"].exp.toFixed(2)}`;
+    if(document.getElementById('sum-expected-debts')) document.getElementById('sum-expected-debts').innerText = `$${catTotals["Debts"].exp.toFixed(2)}`;
 
-    document.getElementById('sum-actual-income').innerText = `$${actInc.toFixed(0)}`;
-    document.getElementById('sum-expected-income').innerText = `$${expInc.toFixed(0)}`;
-    document.getElementById('sum-actual-expenses').innerText = `$${actExp.toFixed(0)}`;
-    document.getElementById('sum-expected-expenses').innerText = `$${expExp.toFixed(0)}`;
+    if(document.getElementById('sum-actual-income')) document.getElementById('sum-actual-income').innerText = `$${actInc.toFixed(2)}`;
+    if(document.getElementById('sum-actual-expenses')) document.getElementById('sum-actual-expenses').innerText = `$${actExp.toFixed(2)}`;
+    if(document.getElementById('sum-actual-food')) document.getElementById('sum-actual-food').innerText = `$${catTotals["Food & Groceries"].act.toFixed(2)}`;
+    if(document.getElementById('sum-actual-utilities')) document.getElementById('sum-actual-utilities').innerText = `$${catTotals["Utilities"].act.toFixed(2)}`;
+    if(document.getElementById('sum-actual-shopping')) document.getElementById('sum-actual-shopping').innerText = `$${catTotals["Shopping"].act.toFixed(2)}`;
+    if(document.getElementById('sum-actual-debts')) document.getElementById('sum-actual-debts').innerText = `$${catTotals["Debts"].act.toFixed(2)}`;
 
-    document.getElementById('sum-actual-food').innerText = `$${catTotals["Food & Groceries"].act.toFixed(0)}`;
-    document.getElementById('sum-expected-food').innerText = `$${catTotals["Food & Groceries"].exp.toFixed(0)}`;
-    document.getElementById('sum-actual-utilities').innerText = `$${catTotals["Utilities"].act.toFixed(0)}`;
-    document.getElementById('sum-expected-utilities').innerText = `$${catTotals["Utilities"].exp.toFixed(0)}`;
-    document.getElementById('sum-actual-shopping').innerText = `$${catTotals["Shopping"].act.toFixed(0)}`;
-    document.getElementById('sum-expected-shopping').innerText = `$${catTotals["Shopping"].exp.toFixed(0)}`;
-    document.getElementById('sum-actual-savings').innerText = `$${catTotals["Savings"].act.toFixed(0)}`;
-    document.getElementById('sum-expected-savings').innerText = `$${catTotals["Savings"].exp.toFixed(0)}`;
+    if(document.getElementById('diff-income')) document.getElementById('diff-income').innerText = `$${(expInc - actInc).toFixed(2)}`;
+    if(document.getElementById('diff-expenses')) document.getElementById('diff-expenses').innerText = `$${(expExp - actExp).toFixed(2)}`;
+    if(document.getElementById('diff-food')) document.getElementById('diff-food').innerText = `$${(catTotals["Food & Groceries"].exp - catTotals["Food & Groceries"].act).toFixed(2)}`;
+    if(document.getElementById('diff-utilities')) document.getElementById('diff-utilities').innerText = `$${(catTotals["Utilities"].exp - catTotals["Utilities"].act).toFixed(2)}`;
+    if(document.getElementById('diff-shopping')) document.getElementById('diff-shopping').innerText = `$${(catTotals["Shopping"].exp - catTotals["Shopping"].act).toFixed(2)}`;
+    if(document.getElementById('diff-debts')) document.getElementById('diff-debts').innerText = `$${(catTotals["Debts"].exp - catTotals["Debts"].act).toFixed(2)}`;
 
-    document.getElementById('pct-income').innerText = expInc ? `${Math.round((actInc / expInc) * 100)}%` : '0%';
-    document.getElementById('pct-expenses').innerText = expExp ? `${Math.round((actExp / expExp) * 100)}%` : '0%';
-    document.getElementById('pct-food').innerText = catTotals["Food & Groceries"].exp ? `${Math.round((catTotals["Food & Groceries"].act / catTotals["Food & Groceries"].exp) * 100)}%` : '0%';
-    document.getElementById('pct-utilities').innerText = catTotals["Utilities"].exp ? `${Math.round((catTotals["Utilities"].act / catTotals["Utilities"].exp) * 100)}%` : '0%';
-    document.getElementById('pct-shopping').innerText = catTotals["Shopping"].exp ? `${Math.round((catTotals["Shopping"].act / catTotals["Shopping"].exp) * 100)}%` : '0%';
-    document.getElementById('pct-savings').innerText = catTotals["Savings"].exp ? `${Math.round((catTotals["Savings"].act / catTotals["Savings"].exp) * 100)}%` : '0%';
+    let actualNetSavings = actInc - actExp;
 
-    document.getElementById('net-actual').innerText = `$${(actInc - actExp).toFixed(0)}`;
-    document.getElementById('net-expected').innerText = `$${(expInc - expExp).toFixed(0)}`;
+    if(document.getElementById('net-savings-spread')) {
+        document.getElementById('net-savings-spread').innerText = `$${actualNetSavings.toFixed(2)}`;
+        if (actualNetSavings >= 0) {
+            document.getElementById('net-savings-spread').className = "text-end text-success";
+        } else {
+            document.getElementById('net-savings-spread').className = "text-end text-danger";
+        }
+    }
 
+    if(document.getElementById('sub-goal-food')) document.getElementById('sub-goal-food').innerText = `$${catTotals["Food & Groceries"].exp.toFixed(2)}`;
+    if(document.getElementById('sub-act-food')) document.getElementById('sub-act-food').innerText = `$${catTotals["Food & Groceries"].act.toFixed(2)}`;
+    if(document.getElementById('sub-goal-utilities')) document.getElementById('sub-goal-utilities').innerText = `$${catTotals["Utilities"].exp.toFixed(2)}`;
+    if(document.getElementById('sub-act-utilities')) document.getElementById('sub-act-utilities').innerText = `$${catTotals["Utilities"].act.toFixed(2)}`;
+    if(document.getElementById('sub-goal-shopping')) document.getElementById('sub-goal-shopping').innerText = `$${catTotals["Shopping"].exp.toFixed(2)}`;
+    if(document.getElementById('sub-act-shopping')) document.getElementById('sub-act-shopping').innerText = `$${catTotals["Shopping"].act.toFixed(2)}`;
+    if(document.getElementById('sub-goal-debts')) document.getElementById('sub-goal-debts').innerText = `$${catTotals["Debts"].exp.toFixed(2)}`;
+    if(document.getElementById('sub-act-debts')) document.getElementById('sub-act-debts').innerText = `$${catTotals["Debts"].act.toFixed(2)}`;
+    
     updateCharts(catTotals, actInc, actExp, expInc, expExp);
+    
+    let actualSavings = actInc - actExp;
+    let savingsRate = actInc > 0 ? (actualSavings / actInc) * 100 : 0;
+    let burnRate = actInc > 0 ? (actExp / actInc) * 100 : 0;
+
+    const heroNum = document.getElementById('savings-hero-number');
+    const heroBadge = document.getElementById('savings-hero-badge');
+    const insightWrapper = document.getElementById('insight-card-wrapper');
+    const analysisText = document.getElementById('savings-analysis-text');
+    const runwayBadge = document.getElementById('runway-status-badge');
+
+    if (heroNum && heroBadge && insightWrapper && analysisText && runwayBadge) {
+        heroNum.innerText = `$${actualSavings.toFixed(2)}`;
+        if (actualSavings >= 0) {
+            heroNum.className = "display-4 fw-black my-2 text-success";
+            heroBadge.className = "badge bg-success-subtle text-success mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
+            heroBadge.innerText = "Surplus Active";
+            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-surplus-active";
+            runwayBadge.innerText = "Accumulating Wealth";
+            runwayBadge.className = "text-success fw-bold";
+            if (savingsRate >= 20) {
+                analysisText.innerText = `Outstanding allocation efficiency! You are currently retaining ${savingsRate.toFixed(1)}% of your income, which clears the premier 20% savings benchmark rule. Capital allocation is highly defensive and positioned for growth.`;
+            } else {
+                analysisText.innerText = `You maintain a positive cash accumulation structure. You are currently saving ${savingsRate.toFixed(1)}% of total inflows. Look to scale down variable merchant outlays in Shopping to optimize capital velocity toward the 20% efficiency layer.`;
+            }
+        } else {
+            heroNum.className = "display-4 fw-black my-2 text-danger";
+            heroBadge.className = "badge bg-danger-subtle text-danger mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
+            heroBadge.innerText = "Deficit Spending";
+            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-deficit-active";
+            runwayBadge.innerText = "Capital Hemorrhage";
+            runwayBadge.className = "text-danger fw-bold";
+            analysisText.innerText = `Warning: Outflows exceed gross inflow capacity. Your burn rate velocity is tracking at ${burnRate.toFixed(1)}%, meaning you are bleeding liquidity. Recommend shifting expected forecast goals immediately and deferring non-essential variable entries.`;
+        }
+    }
+
+    if(document.getElementById('metric-savings-rate')) document.getElementById('metric-savings-rate').innerText = `${savingsRate.toFixed(1)}%`;
+    if(document.getElementById('metric-burn-rate')) document.getElementById('metric-burn-rate').innerText = `${burnRate.toFixed(1)}%`;
+    if(document.getElementById('metric-retained')) document.getElementById('metric-retained').innerText = `$${actualSavings.toFixed(2)}`;
 }
 
 function archiveCurrentMonth() {
     if (isHistoricalMode) return;
-    if(transactions.length === 0) return alert("Empty ledger cannot be archived!");
-    let storageLookupKey = `${currentWorkingMonth}-${currentWorkingFortnight}`;
-    if(!confirm(`Lock historical archive for ${currentWorkingMonth} F${currentWorkingFortnight}?`)) return;
+    const activeMonth = currentWorkingMonth;
+    if(transactions.length === 0) {
+        alert("Cannot archive an empty month ledger!");
+        return;
+    }
+    if(!confirm(`Are you sure you want to lock and close records for ${activeMonth}?`)) return;
 
-    historyArchives = historyArchives.filter(r => r.month !== storageLookupKey);
-    historyArchives.push({ month: storageLookupKey, ledgerSnapshot: [...transactions] });
-    localStorage.setItem('budget_history_archives', JSON.stringify(historyArchives));
-
-    alert(`Archived successfully.`);
-    refreshActiveTargetPeriod();
+    db.collection("budget_archives").doc(activeMonth).set({
+        month: activeMonth,
+        ledgerSnapshot: [...transactions]
+    })
+    .then(() => {
+        alert(`${activeMonth} records successfully locked into cloud history!`);
+        loadMonthData(activeMonth);
+    });
 }
 
 function deleteSelectedArchiveRecord() {
     if (!isHistoricalMode) return;
-    let storageLookupKey = `${currentWorkingMonth}-${currentWorkingFortnight}`;
-    if (!confirm(`Unlock archive records for ${currentWorkingMonth} F${currentWorkingFortnight}?`)) return;
+    if (!confirm(`🗑️ Are you completely sure you want to PERMANENTLY UNLOCK the archive for ${currentWorkingMonth}?`)) return;
 
-    historyArchives = historyArchives.filter(r => r.month !== storageLookupKey);
+    db.collection("budget_archives").doc(currentWorkingMonth).delete().then(() => {
+        alert("Archive unlocked and restored to live state.");
+        loadMonthData(currentWorkingMonth);
+    });
+}
+
+function deleteSelectedArchiveRecord() {
+    if (!isHistoricalMode) return;
+    if (!confirm(`🗑️ Are you completely sure you want to PERMANENTLY UNLOCK and delete the historical archive for ${currentWorkingMonth}? This restores it back to editable live data.`)) return;
+
+    historyArchives = historyArchives.filter(r => r.month !== currentWorkingMonth);
     localStorage.setItem('budget_history_archives', JSON.stringify(historyArchives));
-    refreshActiveTargetPeriod();
+    alert("Archive unlocked.");
+    loadMonthData(currentWorkingMonth);
+}
+
+let calcDisplayString = '0';
+let calcCurrent = '0';
+let calcPrevious = null;
+let calcOperation = null;
+
+function pressCalcKey(key) {
+    const screen = document.getElementById('calc-screen');
+    const tape = document.getElementById('calc-tape');
+
+    if ((key >= '0' && key <= '9') || key === '.') {
+        if (calcCurrent === '0' && key !== '.') {
+            calcCurrent = key;
+        } else if (key === '.' && calcCurrent.includes('.')) {
+            return;
+        } else {
+            calcCurrent += key;
+        }
+        calcDisplayString = calcOperation ? `${calcPrevious}${calcOperation}${calcCurrent}` : calcCurrent;
+    } 
+    else if (key === 'C') {
+        calcCurrent = '0';
+        calcPrevious = null;
+        calcOperation = null;
+        calcDisplayString = '0';
+    } 
+    else if (key === '=') {
+        if (calcOperation && calcPrevious !== null) {
+            const prev = parseFloat(calcPrevious);
+            const curr = parseFloat(calcCurrent);
+            let result = 0;
+            switch(calcOperation) {
+                case '+': result = prev + curr; break;
+                case '-': result = prev - curr; break;
+                case '*': result = prev * curr; break;
+                case '/': result = prev / curr; break;
+            }
+            if (tape.querySelector('.empty-tape-msg')) tape.innerHTML = '';
+            tape.innerHTML += `<div class="tape-row">${calcDisplayString} = ${result.toFixed(2)}</div>`;
+            tape.scrollTop = tape.scrollHeight;
+            calcCurrent = result.toString();
+            calcDisplayString = calcCurrent;
+            calcOperation = null;
+            calcPrevious = null;
+        }
+    } 
+    else {
+        calcOperation = key;
+        calcPrevious = calcCurrent;
+        calcCurrent = '0';
+        calcDisplayString = `${calcPrevious}${calcOperation}`;
+    }
+    screen.innerText = calcDisplayString;
+}
+
+function clearCalcTape() {
+    document.getElementById('calc-tape').innerHTML = '<div class="tape-row empty-tape-msg">Tape Empty</div>';
 }
 
 function initCharts() {
-    Chart.defaults.color = '#475569';
-    const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
-    donutChart = new Chart(ctxDonut, {
-        type: 'doughnut',
-        data: {
-            labels: ['Food', 'Util', 'Shop', 'Save'],
-            datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#ef4444', '#eab308', '#3b82f6', '#22c55e'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    });
+        const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
+        donutChart = new Chart(ctxDonut, {
+             type: 'doughnut',
+            data: {
+                 labels: ['Food & Groceries', 'Utilities', 'Shopping', 'Debts'],
+                datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#e57373', '#fff176', '#64b5f6', '#f97316'] }] // <-- Change this fourth color to orange
+             },
+             options: { responsive: true, maintainAspectRatio: false }
+        });
 
     const ctxBar = document.getElementById('actualVsGoalChart').getContext('2d');
     barChart = new Chart(ctxBar, {
         type: 'bar',
         data: {
-            labels: ['Inc', 'Exp', 'Fd', 'Ut', 'Sh', 'Sv'],
+            labels: ['Income', 'Expenses', 'Food', 'Utilities', 'Shopping', 'Debts'],
             datasets: [
-                { label: 'Act', data: [0,0,0,0,0,0], backgroundColor: '#22c55e' },
-                { label: 'Exp', data: [0,0,0,0,0,0], backgroundColor: '#94a3b8' }
+                { label: 'Actual', data: [0,0,0,0,0,0], backgroundColor: '#2e7d32' },
+                { label: 'Expected', data: [0,0,0,0,0,0], backgroundColor: '#a5d6a7' }
             ]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
     });
 }
 
 function updateCharts(catTotals, actInc, actExp, expInc, expExp) {
-    donutChart.data.datasets[0].data = [catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Savings"].act];
+    donutChart.data.datasets[0].data = [catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Debts"].act];
     donutChart.update();
 
-    barChart.data.datasets[0].data = [actInc, actExp, catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Savings"].act];
-    barChart.data.datasets[1].data = [expInc, expExp, catTotals["Food & Groceries"].exp, catTotals["Utilities"].exp, catTotals["Shopping"].exp, catTotals["Savings"].exp];
-    barChart.update();
+    if (barChart) {
+        barChart.data.datasets[0].data = [actInc, actExp, catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Debts"].act];
+        barChart.data.datasets[1].data = [expInc, expExp, catTotals["Food & Groceries"].exp, catTotals["Utilities"].exp, catTotals["Shopping"].exp, catTotals["Debts"].exp];
+        barChart.update();
+    }
 }
