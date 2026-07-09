@@ -1,20 +1,13 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
+// Initialize Firebase using the standard window compatibility client instance
+firebase.initializeApp({
   apiKey: "AIzaSyCvIgYRRmdQkLeWUpe8sjROyFILvBVqEmc",
   authDomain: "financial-ledger-315ae.firebaseapp.com",
   projectId: "financial-ledger-315ae",
   storageBucket: "financial-ledger-315ae.firebasestorage.app",
   messagingSenderId: "1094421632135",
   appId: "1:1094421632135:web:a748ad8579178834d5d422"
-};
+});
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentWorkingMonth = document.getElementById('budget-month').value;
@@ -26,8 +19,8 @@ let bsModal;
 document.addEventListener("DOMContentLoaded", function() {
     bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
     initCharts();
-    loadMonthData(document.getElementById('budget-month').value);
     setupEventListeners();
+    loadMonthData(document.getElementById('budget-month').value);
 });
 
 function setupEventListeners() {
@@ -139,78 +132,38 @@ function handleIncomeDescChange() {
 
 function saveMonthData() {
     if (isHistoricalMode) return;
-
-    // Save ledger array straight into a centralized cloud document named after the active month split
     db.collection("budget_months").doc(currentWorkingMonth).set({
         ledger: transactions
     })
-    .then(() => {
-        console.log(`Cloud ledger database successfully updated for ${currentWorkingMonth}`);
-    })
-    .catch((error) => {
-        console.error("Error updating centralized cloud document: ", error);
-    });
+    .catch((error) => console.error("Cloud save failed: ", error));
 }
-
-function triggerManualSaveFeedback() {
-    if (isHistoricalMode) return;
-    saveMonthData();
-    alert(`📁 Draft entries for ${currentWorkingMonth} successfully verified and saved to browser storage!`);
-}
-
-function clearCurrentMonthLogs() {
-    if (isHistoricalMode) return;
-    if (!confirm(`⚠️ WARNING: Are you sure you want to permanently clear out all entries recorded inside ${currentWorkingMonth}? This cannot be undone.`)) return;
-    
-    transactions = [];
-    saveMonthData();
-    calculateBudget();
-    alert(`${currentWorkingMonth} ledger data wiped clean.`);
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    bsModal = new bootstrap.Modal(document.getElementById('crudModal'));
-    initCharts();
-    setupEventListeners();
-    
-    // Initial fetch trigger
-    loadMonthData(document.getElementById('budget-month').value);
-});
 
 function loadMonthData(monthName) {
     const historicalBadge = document.getElementById('historical-badge');
     const loggerCard = document.getElementById('logger-card');
 
-    // First check if there is an archived/locked month on the cloud
     db.collection("budget_archives").doc(monthName).get().then((archiveDoc) => {
         if (archiveDoc.exists) {
-            // Found a locked archive entry
             isHistoricalMode = true;
             transactions = archiveDoc.data().ledgerSnapshot || [];
-            
             historicalBadge.classList.remove('d-none');
             loggerCard.classList.add('opacity-50', 'pe-none');
-            document.getElementById('archive-btn').classList.add('d-none');
             calculateBudget();
         } else {
-            // Document is live and editable, pull regular ledger streams
             isHistoricalMode = false;
             historicalBadge.classList.add('d-none');
             loggerCard.classList.remove('opacity-50', 'pe-none');
-            document.getElementById('archive-btn').classList.remove('d-none');
 
             db.collection("budget_months").doc(monthName).get().then((liveDoc) => {
                 if (liveDoc.exists) {
                     transactions = liveDoc.data().ledger || [];
                 } else {
-                    transactions = []; // Empty month initialization layer
+                    transactions = [];
                 }
                 calculateBudget();
             });
         }
-    }).catch((error) => {
-        console.error("Failed to query cloud sync states: ", error);
-    });
+    }).catch((error) => console.error("Fetch failed: ", error));
 }
 
 function openCrudModal(idx) {
@@ -345,11 +298,7 @@ function calculateBudget() {
 
     if(document.getElementById('net-savings-spread')) {
         document.getElementById('net-savings-spread').innerText = `$${actualNetSavings.toFixed(2)}`;
-        if (actualNetSavings >= 0) {
-            document.getElementById('net-savings-spread').className = "text-end text-success";
-        } else {
-            document.getElementById('net-savings-spread').className = "text-end text-danger";
-        }
+        document.getElementById('net-savings-spread').className = actualNetSavings >= 0 ? "text-end text-success" : "text-end text-danger";
     }
 
     if(document.getElementById('sub-goal-food')) document.getElementById('sub-goal-food').innerText = `$${catTotals["Food & Groceries"].exp.toFixed(2)}`;
@@ -382,11 +331,7 @@ function calculateBudget() {
             insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-surplus-active";
             runwayBadge.innerText = "Accumulating Wealth";
             runwayBadge.className = "text-success fw-bold";
-            if (savingsRate >= 20) {
-                analysisText.innerText = `Outstanding allocation efficiency! You are currently retaining ${savingsRate.toFixed(1)}% of your income, which clears the premier 20% savings benchmark rule. Capital allocation is highly defensive and positioned for growth.`;
-            } else {
-                analysisText.innerText = `You maintain a positive cash accumulation structure. You are currently saving ${savingsRate.toFixed(1)}% of total inflows. Look to scale down variable merchant outlays in Shopping to optimize capital velocity toward the 20% efficiency layer.`;
-            }
+            analysisText.innerText = savingsRate >= 20 ? `Outstanding allocation efficiency! You are currently retaining ${savingsRate.toFixed(1)}% of your income.` : `You maintain a positive cash accumulation structure. You are currently saving ${savingsRate.toFixed(1)}% of total inflows.`;
         } else {
             heroNum.className = "display-4 fw-black my-2 text-danger";
             heroBadge.className = "badge bg-danger-subtle text-danger mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
@@ -394,7 +339,7 @@ function calculateBudget() {
             insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-deficit-active";
             runwayBadge.innerText = "Capital Hemorrhage";
             runwayBadge.className = "text-danger fw-bold";
-            analysisText.innerText = `Warning: Outflows exceed gross inflow capacity. Your burn rate velocity is tracking at ${burnRate.toFixed(1)}%, meaning you are bleeding liquidity. Recommend shifting expected forecast goals immediately and deferring non-essential variable entries.`;
+            analysisText.innerText = `Warning: Outflows exceed gross inflow capacity. Your burn rate velocity is tracking at ${burnRate.toFixed(1)}%.`;
         }
     }
 
@@ -403,113 +348,16 @@ function calculateBudget() {
     if(document.getElementById('metric-retained')) document.getElementById('metric-retained').innerText = `$${actualSavings.toFixed(2)}`;
 }
 
-function archiveCurrentMonth() {
-    if (isHistoricalMode) return;
-    const activeMonth = currentWorkingMonth;
-    if(transactions.length === 0) {
-        alert("Cannot archive an empty month ledger!");
-        return;
-    }
-    if(!confirm(`Are you sure you want to lock and close records for ${activeMonth}?`)) return;
-
-    db.collection("budget_archives").doc(activeMonth).set({
-        month: activeMonth,
-        ledgerSnapshot: [...transactions]
-    })
-    .then(() => {
-        alert(`${activeMonth} records successfully locked into cloud history!`);
-        loadMonthData(activeMonth);
-    });
-}
-
-function deleteSelectedArchiveRecord() {
-    if (!isHistoricalMode) return;
-    if (!confirm(`🗑️ Are you completely sure you want to PERMANENTLY UNLOCK the archive for ${currentWorkingMonth}?`)) return;
-
-    db.collection("budget_archives").doc(currentWorkingMonth).delete().then(() => {
-        alert("Archive unlocked and restored to live state.");
-        loadMonthData(currentWorkingMonth);
-    });
-}
-
-function deleteSelectedArchiveRecord() {
-    if (!isHistoricalMode) return;
-    if (!confirm(`🗑️ Are you completely sure you want to PERMANENTLY UNLOCK and delete the historical archive for ${currentWorkingMonth}? This restores it back to editable live data.`)) return;
-
-    historyArchives = historyArchives.filter(r => r.month !== currentWorkingMonth);
-    localStorage.setItem('budget_history_archives', JSON.stringify(historyArchives));
-    alert("Archive unlocked.");
-    loadMonthData(currentWorkingMonth);
-}
-
-let calcDisplayString = '0';
-let calcCurrent = '0';
-let calcPrevious = null;
-let calcOperation = null;
-
-function pressCalcKey(key) {
-    const screen = document.getElementById('calc-screen');
-    const tape = document.getElementById('calc-tape');
-
-    if ((key >= '0' && key <= '9') || key === '.') {
-        if (calcCurrent === '0' && key !== '.') {
-            calcCurrent = key;
-        } else if (key === '.' && calcCurrent.includes('.')) {
-            return;
-        } else {
-            calcCurrent += key;
-        }
-        calcDisplayString = calcOperation ? `${calcPrevious}${calcOperation}${calcCurrent}` : calcCurrent;
-    } 
-    else if (key === 'C') {
-        calcCurrent = '0';
-        calcPrevious = null;
-        calcOperation = null;
-        calcDisplayString = '0';
-    } 
-    else if (key === '=') {
-        if (calcOperation && calcPrevious !== null) {
-            const prev = parseFloat(calcPrevious);
-            const curr = parseFloat(calcCurrent);
-            let result = 0;
-            switch(calcOperation) {
-                case '+': result = prev + curr; break;
-                case '-': result = prev - curr; break;
-                case '*': result = prev * curr; break;
-                case '/': result = prev / curr; break;
-            }
-            if (tape.querySelector('.empty-tape-msg')) tape.innerHTML = '';
-            tape.innerHTML += `<div class="tape-row">${calcDisplayString} = ${result.toFixed(2)}</div>`;
-            tape.scrollTop = tape.scrollHeight;
-            calcCurrent = result.toString();
-            calcDisplayString = calcCurrent;
-            calcOperation = null;
-            calcPrevious = null;
-        }
-    } 
-    else {
-        calcOperation = key;
-        calcPrevious = calcCurrent;
-        calcCurrent = '0';
-        calcDisplayString = `${calcPrevious}${calcOperation}`;
-    }
-    screen.innerText = calcDisplayString;
-}
-
-function clearCalcTape() {
-    document.getElementById('calc-tape').innerHTML = '<div class="tape-row empty-tape-msg">Tape Empty</div>';
-}
-
 function initCharts() {
-        const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
-        donutChart = new Chart(ctxDonut, {
-             type: 'doughnut',
-            data: {
-                 labels: ['Food & Groceries', 'Utilities', 'Shopping', 'Debts'],
-                datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#e57373', '#fff176', '#64b5f6', '#f97316'] }] // <-- Change this fourth color to orange
-             },
-             options: { responsive: true, maintainAspectRatio: false }
-        });
+    const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
+    donutChart = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+            labels: ['Food & Groceries', 'Utilities', 'Shopping', 'Debts'],
+            datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#e57373', '#fff176', '#64b5f6', '#f97316'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 
     const ctxBar = document.getElementById('actualVsGoalChart').getContext('2d');
     barChart = new Chart(ctxBar, {
@@ -526,9 +374,10 @@ function initCharts() {
 }
 
 function updateCharts(catTotals, actInc, actExp, expInc, expExp) {
-    donutChart.data.datasets[0].data = [catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Debts"].act];
-    donutChart.update();
-
+    if (donutChart) {
+        donutChart.data.datasets[0].data = [catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Debts"].act];
+        donutChart.update();
+    }
     if (barChart) {
         barChart.data.datasets[0].data = [actInc, actExp, catTotals["Food & Groceries"].act, catTotals["Utilities"].act, catTotals["Shopping"].act, catTotals["Debts"].act];
         barChart.data.datasets[1].data = [expInc, expExp, catTotals["Food & Groceries"].exp, catTotals["Utilities"].exp, catTotals["Shopping"].exp, catTotals["Debts"].exp];
