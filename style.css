@@ -280,22 +280,3 @@ body {
 ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-/* Color Dot configuration for the Executive Balance Sheet */
-.bg-orange-solid { 
-    background-color: #f97316 !important; 
-}
-
-/* Upper line color code inside Expense Breakdowns at the bottom */
-.sub-themed-debts { 
-    border-top: 4px solid #f97316 !important; 
-}
-
-/* Row background tint adjustments for the Debts breakdown list */
-.color-debts { 
-    background-color: #fffaf0 !important; 
-}
-
-/* High contrast orange sub-heading typography metrics */
-.text-orange-heavy {
-    color: #ea580c !important;
-}
