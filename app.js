@@ -330,32 +330,17 @@ function calculateBudget() {
 
     const heroNum = document.getElementById('savings-hero-number');
     const heroBadge = document.getElementById('savings-hero-badge');
-    const insightWrapper = document.getElementById('insight-card-wrapper');
-    const analysisText = document.getElementById('savings-analysis-text');
-    const runwayBadge = document.getElementById('runway-status-badge');
 
-    if (heroNum && heroBadge && insightWrapper && analysisText && runwayBadge) {
+    if (heroNum && heroBadge) {
         heroNum.innerText = `$${actualSavings.toFixed(2)}`;
         if (actualSavings >= 0) {
             heroNum.className = "display-4 fw-black my-2 text-success";
             heroBadge.className = "badge bg-success-subtle text-success mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
             heroBadge.innerText = "Surplus Active";
-            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-surplus-active";
-            runwayBadge.innerText = "Accumulating Wealth";
-            runwayBadge.className = "text-success fw-bold";
-            if (savingsRate >= 20) {
-                analysisText.innerText = `Outstanding allocation efficiency! You are currently retaining ${savingsRate.toFixed(1)}% of your income, which clears the premier 20% savings benchmark rule. Capital allocation is highly defensive and positioned for growth.`;
-            } else {
-                analysisText.innerText = `You maintain a positive cash accumulation structure. You are currently saving ${savingsRate.toFixed(1)}% of total inflows. Look to scale down variable merchant outlays in Shopping to optimize capital velocity toward the 20% efficiency layer.`;
-            }
         } else {
             heroNum.className = "display-4 fw-black my-2 text-danger";
             heroBadge.className = "badge bg-danger-subtle text-danger mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
             heroBadge.innerText = "Deficit Spending";
-            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-deficit-active";
-            runwayBadge.innerText = "Capital Hemorrhage";
-            runwayBadge.className = "text-danger fw-bold";
-            analysisText.innerText = `Warning: Outflows exceed gross inflow capacity. Your burn rate velocity is tracking at ${burnRate.toFixed(1)}%, meaning you are bleeding liquidity. Recommend shifting expected forecast goals immediately and deferring non-essential variable entries.`;
         }
     }
 
