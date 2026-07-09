@@ -8,8 +8,6 @@ firebase.initializeApp({
 });
 
 const db = firebase.firestore();
-
-// Keep your existing let/const declarations here
 let currentWorkingMonth = document.getElementById('budget-month').value;
 let transactions = [];
 let isHistoricalMode = false;
