@@ -1,4 +1,3 @@
-// Initialize Firebase using the standard window compatibility client instance
 firebase.initializeApp({
   apiKey: "AIzaSyCvIgYRRmdQkLeWUpe8sjROyFILvBVqEmc",
   authDomain: "financial-ledger-315ae.firebaseapp.com",
@@ -10,6 +9,7 @@ firebase.initializeApp({
 
 const db = firebase.firestore();
 
+// Keep your existing let/const declarations here
 let currentWorkingMonth = document.getElementById('budget-month').value;
 let transactions = [];
 let isHistoricalMode = false;
