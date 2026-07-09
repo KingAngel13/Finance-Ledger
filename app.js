@@ -14,16 +14,10 @@ document.addEventListener("DOMContentLoaded", function() {
     setupEventListeners();
 });
 
-That is exactly why it isn't working—if the ID isn't in your app.js code, the event listener can't find the element to toggle.
-
-You need to make sure both the HTML has that id and the JavaScript references it correctly. Here is exactly how to fix it:
-
-1. Update your app.js
-Look for the setupEventListeners function in your app.js file and ensure it looks like this. I have added the variable definitions inside the listener:
-
-JavaScript
 function setupEventListeners() {
     const typeSelect = document.getElementById('tx-type');
+    const container = document.getElementById('desc-field-container');
+    const customContainer = document.getElementById('custom-desc-container');
     const monthSelect = document.getElementById('budget-month');
 
     monthSelect.addEventListener('change', function() {
@@ -33,39 +27,32 @@ function setupEventListeners() {
 
     typeSelect.addEventListener('change', function() {
         const catSelect = document.getElementById('tx-cat');
-        // Define these variables INSIDE the listener so they are found every time
-        const container = document.getElementById('desc-field-container');
-        const customContainer = document.getElementById('custom-desc-container');
-
         if (this.value === 'Income') {
             catSelect.disabled = true;
             catSelect.value = "";
-            // Ensure this container exists in your HTML
-            if(container) {
-                container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Description</label>
-                    <select id="tx-desc-dropdown" class="form-select form-dark-input" required>
-                        <option value="Radius Rimu Park">Radius Rimu Park</option>
-                        <option value="St. Pierre's Sushi">St. Pierre's Sushi</option>
-                        <option value="McDonald's Kamo">McDonald's Kamo</option>
-                        <option value="Radius Potter Home">Radius Potter Home</option>
-                        <option value="Others">Others</option>
-                    </select>
-                `;
-            }
+            container.innerHTML = `
+                <label class="form-label small fw-bold text-muted">Description</label>
+                <select id="tx-desc-dropdown" class="form-select form-dark-input" required>
+                    <option value="Radius Rimu Park">Radius Rimu Park</option>
+                    <option value="St. Pierre's Sushi">St. Pierre's Sushi</option>
+                    <option value="McDonald's Kamo">McDonald's Kamo</option>
+                    <option value="Radius Potter Home">Radius Potter Home</option>
+                    <option value="Others">Others</option>
+                </select>
+            `;
+            document.getElementById('tx-desc-dropdown').addEventListener('change', handleIncomeDescChange);
         } else {
             catSelect.disabled = false;
             catSelect.value = "Food & Groceries";
-            if(customContainer) customContainer.classList.add('d-none');
-            if(container) {
-                container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
-                    <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
-                `;
-            }
+            customContainer.classList.add('d-none');
+            document.getElementById('tx-desc-custom').required = false;
+            container.innerHTML = `
+                <label class="form-label small fw-bold text-muted">Counterparty / Merchant</label>
+                <input type="text" id="tx-desc-text" class="form-control form-dark-input" placeholder="e.g. Pack'nSave" required>
+            `;
         }
     });
-}
+
     document.getElementById('transaction-form').addEventListener('submit', function(e) {
         e.preventDefault();
         if (isHistoricalMode) return;
@@ -343,17 +330,32 @@ function calculateBudget() {
 
     const heroNum = document.getElementById('savings-hero-number');
     const heroBadge = document.getElementById('savings-hero-badge');
+    const insightWrapper = document.getElementById('insight-card-wrapper');
+    const analysisText = document.getElementById('savings-analysis-text');
+    const runwayBadge = document.getElementById('runway-status-badge');
 
-    if (heroNum && heroBadge) {
+    if (heroNum && heroBadge && insightWrapper && analysisText && runwayBadge) {
         heroNum.innerText = `$${actualSavings.toFixed(2)}`;
         if (actualSavings >= 0) {
             heroNum.className = "display-4 fw-black my-2 text-success";
             heroBadge.className = "badge bg-success-subtle text-success mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
             heroBadge.innerText = "Surplus Active";
+            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-surplus-active";
+            runwayBadge.innerText = "Accumulating Wealth";
+            runwayBadge.className = "text-success fw-bold";
+            if (savingsRate >= 20) {
+                analysisText.innerText = `Outstanding allocation efficiency! You are currently retaining ${savingsRate.toFixed(1)}% of your income, which clears the premier 20% savings benchmark rule. Capital allocation is highly defensive and positioned for growth.`;
+            } else {
+                analysisText.innerText = `You maintain a positive cash accumulation structure. You are currently saving ${savingsRate.toFixed(1)}% of total inflows. Look to scale down variable merchant outlays in Shopping to optimize capital velocity toward the 20% efficiency layer.`;
+            }
         } else {
             heroNum.className = "display-4 fw-black my-2 text-danger";
             heroBadge.className = "badge bg-danger-subtle text-danger mx-auto px-3 py-1 rounded-pill font-xs fw-bold";
             heroBadge.innerText = "Deficit Spending";
+            insightWrapper.className = "card p-3 border-0 shadow-sm h-100 justify-content-between border-deficit-active";
+            runwayBadge.innerText = "Capital Hemorrhage";
+            runwayBadge.className = "text-danger fw-bold";
+            analysisText.innerText = `Warning: Outflows exceed gross inflow capacity. Your burn rate velocity is tracking at ${burnRate.toFixed(1)}%, meaning you are bleeding liquidity. Recommend shifting expected forecast goals immediately and deferring non-essential variable entries.`;
         }
     }
 
@@ -390,6 +392,64 @@ function deleteSelectedArchiveRecord() {
     loadMonthData(currentWorkingMonth);
 }
 
+let calcDisplayString = '0';
+let calcCurrent = '0';
+let calcPrevious = null;
+let calcOperation = null;
+
+function pressCalcKey(key) {
+    const screen = document.getElementById('calc-screen');
+    const tape = document.getElementById('calc-tape');
+
+    if ((key >= '0' && key <= '9') || key === '.') {
+        if (calcCurrent === '0' && key !== '.') {
+            calcCurrent = key;
+        } else if (key === '.' && calcCurrent.includes('.')) {
+            return;
+        } else {
+            calcCurrent += key;
+        }
+        calcDisplayString = calcOperation ? `${calcPrevious}${calcOperation}${calcCurrent}` : calcCurrent;
+    } 
+    else if (key === 'C') {
+        calcCurrent = '0';
+        calcPrevious = null;
+        calcOperation = null;
+        calcDisplayString = '0';
+    } 
+    else if (key === '=') {
+        if (calcOperation && calcPrevious !== null) {
+            const prev = parseFloat(calcPrevious);
+            const curr = parseFloat(calcCurrent);
+            let result = 0;
+            switch(calcOperation) {
+                case '+': result = prev + curr; break;
+                case '-': result = prev - curr; break;
+                case '*': result = prev * curr; break;
+                case '/': result = prev / curr; break;
+            }
+            if (tape.querySelector('.empty-tape-msg')) tape.innerHTML = '';
+            tape.innerHTML += `<div class="tape-row">${calcDisplayString} = ${result.toFixed(2)}</div>`;
+            tape.scrollTop = tape.scrollHeight;
+            calcCurrent = result.toString();
+            calcDisplayString = calcCurrent;
+            calcOperation = null;
+            calcPrevious = null;
+        }
+    } 
+    else {
+        calcOperation = key;
+        calcPrevious = calcCurrent;
+        calcCurrent = '0';
+        calcDisplayString = `${calcPrevious}${calcOperation}`;
+    }
+    screen.innerText = calcDisplayString;
+}
+
+function clearCalcTape() {
+    document.getElementById('calc-tape').innerHTML = '<div class="tape-row empty-tape-msg">Tape Empty</div>';
+}
+
 function initCharts() {
         const ctxDonut = document.getElementById('expenseDonutChart').getContext('2d');
         donutChart = new Chart(ctxDonut, {
@@ -424,3 +484,4 @@ function updateCharts(catTotals, actInc, actExp, expInc, expExp) {
         barChart.data.datasets[1].data = [expInc, expExp, catTotals["Food & Groceries"].exp, catTotals["Utilities"].exp, catTotals["Shopping"].exp, catTotals["Debts"].exp];
         barChart.update();
     }
+}
